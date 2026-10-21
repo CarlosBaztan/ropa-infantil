@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 /*
@@ -15,12 +15,26 @@ export const metadata: Metadata = {
     "Compra y vende lotes de ropa infantil por talla y temporada. Entrega en mano sin gastos de envío.",
 };
 
+/* Explícito para que nadie añada maximum-scale y bloquee la ampliación. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function DisposicionRaiz({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        {/* Primer elemento enfocable: permite saltarse la navegación. */}
+        <a href="#contenido" className="salto-contenido">
+          Ir al contenido
+        </a>
+        <main id="contenido" style={{ scrollMarginTop: "var(--sp-4)" }}>
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
