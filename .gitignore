@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Libro de ejecución de los planes (andamiaje, no código)
+.superpowers/
