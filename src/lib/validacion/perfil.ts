@@ -26,7 +26,18 @@ const EDAD_MINIMA = 18;
 const EDAD_MAXIMA_RAZONABLE = 120;
 const LONGITUD_MINIMA_CONTRASENA = 10;
 
-const FORMA_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/*
+ * El patrón anterior, `[^\s@]+@[^\s@]+\.[^\s@]+`, aceptaba cosas que no son
+ * direcciones: "ana@ejemplo..com", "ana@-.com" o "ana@[127.0.0.1]". Este
+ * exige que cada etiqueta del dominio empiece y acabe en letra o número,
+ * que es lo que descarta los puntos seguidos y los guiones sueltos.
+ * Se aplica sobre el correo ya normalizado a minúsculas.
+ */
+const FORMA_CORREO =
+  /^[^\s@]{1,64}@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+
+/** Longitud máxima de una dirección de correo según la norma. */
+const LONGITUD_MAXIMA_CORREO = 254;
 const FORMA_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 /**
  * La restricción alias_con_forma de la tabla perfiles tendrá que usar esta
@@ -110,11 +121,13 @@ export function validarRegistro(
   ahora = new Date(),
 ): Resultado<EntradaRegistro> {
   const correo = normalizarCorreo(entrada.correo);
-  if (!FORMA_CORREO.test(correo)) {
+  if (correo.length > LONGITUD_MAXIMA_CORREO || !FORMA_CORREO.test(correo)) {
     return { valido: false, error: "Ese correo no parece válido." };
   }
 
-  if (entrada.contrasena.length < LONGITUD_MINIMA_CONTRASENA) {
+  // Se mide sin los espacios de los extremos: doce espacios no son una
+  // contraseña de doce caracteres.
+  if (entrada.contrasena.trim().length < LONGITUD_MINIMA_CONTRASENA) {
     return {
       valido: false,
       error: `La contraseña necesita al menos ${LONGITUD_MINIMA_CONTRASENA} caracteres.`,

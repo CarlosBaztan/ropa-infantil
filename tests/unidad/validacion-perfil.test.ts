@@ -111,6 +111,36 @@ describe("validarRegistro", () => {
     expect(validarRegistro({ ...base, contrasena: "1234" }).valido).toBe(false);
   });
 
+  it("rechaza correos con forma inventada que el patrón flojo aceptaba", () => {
+    for (const malo of [
+      "ana@ejemplo..com",
+      "ana@-.com",
+      "ana@ejemplo-.com",
+      "ana@[127.0.0.1]",
+      "ana@ejemplo",
+      "@ejemplo.com",
+      `${"a".repeat(300)}@ejemplo.com`,
+    ]) {
+      expect(validarRegistro({ ...base, correo: malo }).valido).toBe(false);
+    }
+  });
+
+  it("acepta correos reales con puntos, signos y dominios compuestos", () => {
+    for (const bueno of [
+      "ana.garcia+bebes@mi-tienda.co.uk",
+      "ana_garcia@correo.es",
+      "a@b.es",
+    ]) {
+      expect(validarRegistro({ ...base, correo: bueno }).valido).toBe(true);
+    }
+  });
+
+  it("rechaza una contraseña que solo son espacios", () => {
+    expect(validarRegistro({ ...base, contrasena: " ".repeat(12) }).valido).toBe(
+      false,
+    );
+  });
+
   it("el marketing es opcional y por defecto no se acepta", () => {
     const r = validarRegistro(base);
     expect(r.valido).toBe(true);
