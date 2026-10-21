@@ -14,24 +14,26 @@ import { config } from "dotenv";
 config({ path: ".env.local", quiet: true });
 
 const URL = process.env.SUPABASE_TEST_URL?.trim();
-const CLAVE_ANONIMA = process.env.SUPABASE_TEST_ANON_KEY?.trim();
-const CLAVE_SERVICIO = process.env.SUPABASE_TEST_SERVICE_ROLE_KEY?.trim();
+const CLAVE_PUBLICABLE = process.env.SUPABASE_TEST_PUBLISHABLE_KEY?.trim();
+const CLAVE_SECRETA = process.env.SUPABASE_TEST_SECRET_KEY?.trim();
 
-export const HAY_BASE_DE_DATOS = Boolean(URL && CLAVE_ANONIMA && CLAVE_SERVICIO);
+export const HAY_BASE_DE_DATOS = Boolean(
+  URL && CLAVE_PUBLICABLE && CLAVE_SECRETA,
+);
 
 export const MOTIVO_SALTO =
   "faltan las claves del proyecto de pruebas en .env.local";
 
-/** Cliente con la clave de servicio: se salta todas las reglas de permisos. */
+/** Cliente con la clave secreta: se salta todas las reglas de permisos. */
 export function clienteAdministrador(): SupabaseClient {
-  return createClient(URL!, CLAVE_SERVICIO!, {
+  return createClient(URL!, CLAVE_SECRETA!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
 /** Cliente sin sesión, como un visitante que no se ha registrado. */
 export function clienteAnonimo(): SupabaseClient {
-  return createClient(URL!, CLAVE_ANONIMA!, {
+  return createClient(URL!, CLAVE_PUBLICABLE!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
