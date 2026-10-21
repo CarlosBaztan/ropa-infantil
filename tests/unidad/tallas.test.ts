@@ -30,6 +30,15 @@ describe("tallaSugeridaPorEdad", () => {
     expect(tallaSugeridaPorEdad(Number.NaN)).toBeNull();
     expect(tallaSugeridaPorEdad(Number.POSITIVE_INFINITY)).toBeNull();
   });
+
+  it("una edad con decimales cae en su tramo, no en el vacío", () => {
+    // Quien llame a esto calculará los meses desde una fecha de nacimiento,
+    // y ahí el decimal es lo normal, no la excepción.
+    expect(tallaSugeridaPorEdad(2.5)?.codigo).toBe("0-3-meses");
+    expect(tallaSugeridaPorEdad(5.9)?.codigo).toBe("3-6-meses");
+    expect(tallaSugeridaPorEdad(23.5)?.codigo).toBe("18-24-meses");
+    expect(tallaSugeridaPorEdad(35.5)?.codigo).toBe("2-anos");
+  });
 });
 
 describe("tallaSiguiente", () => {
@@ -71,6 +80,21 @@ describe("TALLAS", () => {
     for (const talla of TALLAS) {
       expect(talla.etiqueta.length).toBeGreaterThan(0);
       expect(talla.tallaEu.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("la etiqueta concuerda con el código y con el tramo de edad", () => {
+    // Sin esto, un código y su etiqueta pueden decir cosas distintas
+    // ("6-9-meses" etiquetado como "6-12 meses") y nadie se entera.
+    for (const talla of TALLAS) {
+      if (talla.grupo === "anios") {
+        const anios = Number.parseInt(talla.etiqueta, 10);
+        expect(talla.codigo).toBe(`${anios}-anos`);
+        expect(talla.edadMesesMin).toBe(anios * 12);
+        expect(talla.edadMesesMax).toBe(anios * 12 + 11);
+      } else {
+        expect(talla.codigo).toBe(talla.etiqueta.replace(/\s/g, "-"));
+      }
     }
   });
 });

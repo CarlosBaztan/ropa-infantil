@@ -215,8 +215,8 @@ El único canal de captación gratuito que vas a tener, y condiciona cómo se co
 ```
 /anuncio/lote-invierno-nina-2-anos-a7f3k2     ← ficha
 /lotes                                         ← lotes (muy buscado)
-/lotes/talla/3-meses                           ← lotes por talla
-/ropa/nina/3-meses                             ← género + talla
+/lotes/talla/3-6-meses                         ← lotes por talla
+/ropa/nina/3-6-meses                           ← género + talla
 /ropa/nina/vestidos                            ← género + categoría
 /marca/zara                                    ← marca
 /ropa-segunda-mano/{ciudad}                    ← la zona de arranque
@@ -231,7 +231,9 @@ El único canal de captación gratuito que vas a tener, y condiciona cómo se co
 
 **Los anuncios vendidos no se borran:** su página sigue viva marcada como vendida, con un bloque de alternativas disponibles. Captura las búsquedas muy concretas, que serán tu único tráfico realista al principio.
 
-**Dieciocho páginas de aterrizaje desde el primer día**, encabezadas por `/lotes`, las tallas de bebé (0-3, 3, 6, 12, 18 meses), las de niño (2 y 4 años), categorías (abrigos, pijamas, vestidos, bodies), marcas y la canastilla de recién nacido.
+**Dieciocho páginas de aterrizaje desde el primer día**, encabezadas por `/lotes`, las tallas de bebé (`0-3-meses`, `3-6-meses`, `6-9-meses`, `9-12-meses`, `12-18-meses`, `18-24-meses`), las de niño (`2-anos` y `4-anos`), categorías (abrigos, pijamas, vestidos, bodies), marcas y la canastilla de recién nacido.
+
+**Sobre los códigos de talla:** la lista canónica usa rangos, que es como viene etiquetada la ropa infantil en España. Pero una madre busca "ropa bebé 3 meses", no "3-6 meses", así que en el plan 3 las direcciones de mes suelto (`/ropa/talla/3-meses`) existirán como atajos que redirigen a su rango. El código de talla, que es inmutable y va en la base de datos, se queda en rangos; el atajo vive solo en la capa de direcciones.
 
 ---
 

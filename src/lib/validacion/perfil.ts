@@ -28,8 +28,37 @@ const LONGITUD_MINIMA_CONTRASENA = 10;
 
 const FORMA_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FORMA_FECHA = /^\d{4}-\d{2}-\d{2}$/;
-/** Misma expresión que la restricción alias_con_forma de la base de datos. */
+/**
+ * La restricción alias_con_forma de la tabla perfiles tendrá que usar esta
+ * misma expresión cuando se escriba esa migración (tarea 4): la base de
+ * datos es la última palabra y esto solo da un mensaje legible.
+ */
 const FORMA_ALIAS = /^[a-z0-9][a-z0-9_-]{1,28}[a-z0-9]$/;
+
+/*
+ * La edad se mide por el calendario de España, no por el de Greenwich.
+ * Medir en UTC rechazaba por menor, entre las once de la noche y medianoche,
+ * a quien ya había cumplido los 18 aquí.
+ */
+const ZONA_HORARIA = "Europe/Madrid";
+
+const FECHA_EN_ESPANA = new Intl.DateTimeFormat("en-CA", {
+  timeZone: ZONA_HORARIA,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** Devuelve el día que es en España, como AAAA-MM-DD. */
+function diaEnEspana(instante: Date): string {
+  return FECHA_EN_ESPANA.format(instante);
+}
+
+/** Parte un AAAA-MM-DD validado en sus tres números. */
+function partesDeFecha(fecha: string): [number, number, number] {
+  const trozos = fecha.split("-");
+  return [Number(trozos[0]), Number(trozos[1]), Number(trozos[2])];
+}
 
 /**
  * Deja el correo en una sola forma canónica, para que "Ana@X.com" y
@@ -46,25 +75,27 @@ export function normalizarCorreo(correo: string): string {
  */
 export function edadEnAnios(
   fechaNacimiento: string,
-  hoy = new Date(),
+  ahora = new Date(),
 ): number | null {
   if (!FORMA_FECHA.test(fechaNacimiento)) return null;
 
-  const fecha = new Date(`${fechaNacimiento}T00:00:00Z`);
-  if (Number.isNaN(fecha.getTime())) return null;
+  const comoFecha = new Date(`${fechaNacimiento}T00:00:00Z`);
+  if (Number.isNaN(comoFecha.getTime())) return null;
 
   // Rechaza fechas que no existen, como "2008-02-30", que JavaScript
   // convertiría en marzo sin avisar.
-  if (fecha.toISOString().slice(0, 10) !== fechaNacimiento) return null;
+  if (comoFecha.toISOString().slice(0, 10) !== fechaNacimiento) return null;
 
-  if (fecha.getTime() > hoy.getTime()) return null;
+  // Las dos fechas se comparan como texto AAAA-MM-DD, que ordena igual que
+  // el calendario y no arrastra husos horarios.
+  const hoy = diaEnEspana(ahora);
+  if (fechaNacimiento > hoy) return null;
 
-  let edad = hoy.getUTCFullYear() - fecha.getUTCFullYear();
-  const mesesDeDiferencia = hoy.getUTCMonth() - fecha.getUTCMonth();
-  if (
-    mesesDeDiferencia < 0 ||
-    (mesesDeDiferencia === 0 && hoy.getUTCDate() < fecha.getUTCDate())
-  ) {
+  const [anioNace, mesNace, diaNace] = partesDeFecha(fechaNacimiento);
+  const [anioHoy, mesHoy, diaHoy] = partesDeFecha(hoy);
+
+  let edad = anioHoy - anioNace;
+  if (mesHoy < mesNace || (mesHoy === mesNace && diaHoy < diaNace)) {
     edad--;
   }
 
@@ -74,6 +105,9 @@ export function edadEnAnios(
 
 export function validarRegistro(
   entrada: EntradaRegistro,
+  /* El reloj se inyecta para que las pruebas del límite de los 18 años no
+   * cambien de significado con el paso del tiempo. */
+  ahora = new Date(),
 ): Resultado<EntradaRegistro> {
   const correo = normalizarCorreo(entrada.correo);
   if (!FORMA_CORREO.test(correo)) {
@@ -87,7 +121,7 @@ export function validarRegistro(
     };
   }
 
-  const edad = edadEnAnios(entrada.fechaNacimiento);
+  const edad = edadEnAnios(entrada.fechaNacimiento, ahora);
   if (edad === null) {
     return { valido: false, error: "Revisa la fecha de nacimiento." };
   }

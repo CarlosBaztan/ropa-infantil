@@ -87,10 +87,13 @@ export const TALLAS: readonly Talla[] = [
  */
 export function tallaSugeridaPorEdad(edadEnMeses: number): Talla | null {
   if (!Number.isFinite(edadEnMeses) || edadEnMeses < 0) return null;
+  // Se redondea hacia abajo porque quien llame a esto calculará los meses
+  // desde una fecha de nacimiento, y ahí el decimal es lo normal: sin esto,
+  // un bebé de 2,5 meses se quedaba sin talla.
+  const meses = Math.floor(edadEnMeses);
   return (
     TALLAS.find(
-      (talla) =>
-        edadEnMeses >= talla.edadMesesMin && edadEnMeses <= talla.edadMesesMax,
+      (talla) => meses >= talla.edadMesesMin && meses <= talla.edadMesesMax,
     ) ?? null
   );
 }

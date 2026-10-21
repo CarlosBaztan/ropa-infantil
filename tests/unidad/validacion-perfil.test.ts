@@ -61,15 +61,40 @@ describe("validarRegistro", () => {
   });
 
   it("rechaza a quien tiene 17 años", () => {
-    const r = validarRegistro({ ...base, fechaNacimiento: "2010-01-01" });
+    // Con reloj fijo: si no, "2010-01-01" deja de tener 17 años con el
+    // paso del tiempo y la prueba acaba comprobando otra cosa.
+    const r = validarRegistro(
+      { ...base, fechaNacimiento: "2009-06-15" },
+      new Date("2026-10-21T12:00:00Z"),
+    );
     expect(r.valido).toBe(false);
     if (!r.valido) expect(r.error).toContain("18");
   });
 
-  it("rechaza una fecha de nacimiento futura", () => {
-    expect(validarRegistro({ ...base, fechaNacimiento: "2030-01-01" }).valido).toBe(
-      false,
+  it("deja pasar a quien cumple 18 justo hoy", () => {
+    const r = validarRegistro(
+      { ...base, fechaNacimiento: "2008-10-21" },
+      new Date("2026-10-21T12:00:00Z"),
     );
+    expect(r.valido).toBe(true);
+  });
+
+  it("rechaza a quien los cumple mañana, por un solo día", () => {
+    const r = validarRegistro(
+      { ...base, fechaNacimiento: "2008-10-22" },
+      new Date("2026-10-21T12:00:00Z"),
+    );
+    expect(r.valido).toBe(false);
+  });
+
+  it("rechaza una fecha de nacimiento futura", () => {
+    // También con reloj fijo: con una fecha lejana, la prueba acabaría
+    // pasando por la regla de los 18 y no por la de fecha futura.
+    const r = validarRegistro(
+      { ...base, fechaNacimiento: "2027-01-01" },
+      new Date("2026-10-21T12:00:00Z"),
+    );
+    expect(r.valido).toBe(false);
   });
 
   it("rechaza un correo sin arroba", () => {
@@ -127,5 +152,37 @@ describe("validarAlias", () => {
   it("rechaza acentos y eñes, que no caben en una dirección limpia", () => {
     expect(validarAlias("begoña").valido).toBe(false);
     expect(validarAlias("maría").valido).toBe(false);
+  });
+});
+
+/*
+ * La edad se mide por el calendario de España, no por el de Greenwich.
+ * Entre las once de la noche y medianoche las dos fechas no coinciden, y
+ * medir en UTC rechaza por menor a un adulto que ya ha cumplido años aquí.
+ */
+describe("edadEnAnios con el reloj de España", () => {
+  it("a las 01:30 de Madrid ya es el día siguiente, y cumple 18", () => {
+    // 2026-10-20T23:30Z son las 01:30 del 21 en Madrid (horario de verano).
+    expect(edadEnAnios("2008-10-21", new Date("2026-10-20T23:30:00Z"))).toBe(18);
+  });
+
+  it("en invierno pasa lo mismo, con una hora de diferencia", () => {
+    // 2027-01-20T23:30Z son las 00:30 del 21 en Madrid.
+    expect(edadEnAnios("2009-01-21", new Date("2027-01-20T23:30:00Z"))).toBe(18);
+  });
+
+  it("a las 22:00 de Madrid todavía es el día de antes", () => {
+    // 2026-10-20T20:00Z son las 22:00 del 20 en Madrid: aún no los cumple.
+    expect(edadEnAnios("2008-10-21", new Date("2026-10-20T20:00:00Z"))).toBe(17);
+  });
+
+  it("un bebé nacido hoy en España tiene cero años, no una fecha inválida", () => {
+    const hoyEnMadrid = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Madrid",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    expect(edadEnAnios(hoyEnMadrid)).toBe(0);
   });
 });

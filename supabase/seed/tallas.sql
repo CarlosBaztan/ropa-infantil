@@ -28,3 +28,15 @@ on conflict (codigo) do update set
   edad_meses_min = excluded.edad_meses_min,
   edad_meses_max = excluded.edad_meses_max,
   orden          = excluded.orden;
+
+-- Y se retira lo que ya no esté en la lista. Sin esto, una talla eliminada
+-- del código sobrevive en la base de datos y sigue saliendo en los filtros.
+-- No es un borrado a ciegas: respeta las que sí están, de modo que los
+-- anuncios que apunten a ellas no se quedan huérfanos.
+delete from tallas
+ where codigo not in (
+   '0-3-meses', '3-6-meses', '6-9-meses', '9-12-meses', '12-18-meses',
+   '18-24-meses', '2-anos', '3-anos', '4-anos', '5-anos', '6-anos',
+   '7-anos', '8-anos', '9-anos', '10-anos', '11-anos', '12-anos',
+   '13-anos', '14-anos'
+ );
