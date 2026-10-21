@@ -79,3 +79,34 @@ export async function crearUsuarioDePrueba(
 export async function borrarUsuarioDePrueba(id: string): Promise<void> {
   await clienteAdministrador().auth.admin.deleteUser(id);
 }
+
+/**
+ * Crea un usuario SIN confirmar el correo y NO inicia sesión, porque
+ * Supabase no se lo permite: esa negativa es justamente lo que se quiere
+ * comprobar.
+ */
+export async function crearUsuarioSinConfirmar(
+  prefijo: string,
+): Promise<{ id: string; correo: string }> {
+  const admin = clienteAdministrador();
+  const correo = `${prefijo}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}@ejemplo.test`;
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email: correo,
+    password: CONTRASENA_DE_PRUEBA,
+    email_confirm: false,
+  });
+  if (error) throw error;
+  return { id: data.user!.id, correo };
+}
+
+/** Intenta iniciar sesión y devuelve el error, o null si entró. */
+export async function intentarAcceso(correo: string): Promise<string | null> {
+  const { error } = await clienteAnonimo().auth.signInWithPassword({
+    email: correo,
+    password: CONTRASENA_DE_PRUEBA,
+  });
+  return error ? error.message : null;
+}

@@ -16,7 +16,12 @@ create table perfiles (
   -- Hoy siempre 'particular'. Existe desde el primer día para que admitir
   -- tiendas algún día no obligue a reescribir media base de datos.
   tipo_vendedor tipo_vendedor not null default 'particular',
-  correo_verificado boolean not null default false,
+  -- Aquí NO hay una columna "correo_verificado". Ese dato vive en
+  -- auth.users.email_confirmed_at y se consulta allí, con la función
+  -- tiene_correo_verificado(). Copiarlo a esta tabla y mantenerlo
+  -- sincronizado con disparadores se probó y se quedó desfasado al primer
+  -- intento: auth es un esquema de Supabase y no controlamos en qué orden
+  -- escribe. Un dato duplicado es un dato que algún día miente.
   acepta_marketing boolean not null default false,
   bloqueado boolean not null default false,
   fecha_alta timestamptz not null default now(),
@@ -59,7 +64,6 @@ begin
   if auth.role() = 'service_role' then
     return new;
   end if;
-  new.correo_verificado := old.correo_verificado;
   new.bloqueado         := old.bloqueado;
   new.tipo_vendedor     := old.tipo_vendedor;
   new.fecha_alta        := old.fecha_alta;
@@ -76,8 +80,7 @@ create or replace function crear_perfil_al_registrarse()
 returns trigger language plpgsql security definer
 set search_path = public as $$
 begin
-  insert into perfiles (id, correo_verificado)
-  values (new.id, new.email_confirmed_at is not null)
+  insert into perfiles (id) values (new.id)
   on conflict (id) do nothing;
   return new;
 end;
@@ -86,18 +89,3 @@ $$;
 create trigger al_crear_usuario
   after insert on auth.users
   for each row execute function crear_perfil_al_registrarse();
-
-create or replace function sincronizar_verificacion()
-returns trigger language plpgsql security definer
-set search_path = public as $$
-begin
-  update perfiles
-     set correo_verificado = new.email_confirmed_at is not null
-   where id = new.id;
-  return new;
-end;
-$$;
-
-create trigger al_verificar_correo
-  after update of email_confirmed_at on auth.users
-  for each row execute function sincronizar_verificacion();

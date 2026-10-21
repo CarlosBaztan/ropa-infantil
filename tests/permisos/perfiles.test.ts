@@ -14,7 +14,9 @@ import {
   clienteAdministrador,
   clienteAnonimo,
   crearUsuarioDePrueba,
+  crearUsuarioSinConfirmar,
   HAY_BASE_DE_DATOS,
+  intentarAcceso,
   MOTIVO_SALTO,
   type UsuarioDePrueba,
 } from "./entorno";
@@ -81,24 +83,15 @@ describe.skipIf(!HAY_BASE_DE_DATOS)(`permisos de perfiles`, () => {
     expect(data?.alias).not.toBe("secuestrado");
   });
 
-  it("nadie puede marcarse el correo como verificado por su cuenta", async () => {
-    const sinVerificar = await crearUsuarioDePrueba("sin-verificar", false);
-    try {
-      await sinVerificar.cliente
-        .from("perfiles")
-        .update({ correo_verificado: true })
-        .eq("id", sinVerificar.id);
-
-      const { data } = await clienteAdministrador()
-        .from("perfiles")
-        .select("correo_verificado")
-        .eq("id", sinVerificar.id)
-        .single();
-      expect(data?.correo_verificado).toBe(false);
-    } finally {
-      await borrarUsuarioDePrueba(sinVerificar.id);
-    }
-  }, 30_000);
+  it("el perfil no guarda una copia del estado de verificación", async () => {
+    // Si alguien vuelve a añadir esa columna, esta prueba lo caza: un dato
+    // duplicado del esquema auth acabaría desfasado, y ya pasó una vez.
+    const { error } = await clienteAdministrador()
+      .from("perfiles")
+      .select("correo_verificado")
+      .limit(1);
+    expect(error).not.toBeNull();
+  });
 
   it("nadie puede desbloquearse a sí mismo", async () => {
     const admin = clienteAdministrador();
@@ -153,21 +146,38 @@ describe.skipIf(!HAY_BASE_DE_DATOS)(`permisos de perfiles`, () => {
 });
 
 describe.skipIf(!HAY_BASE_DE_DATOS)("verificación del correo", () => {
-  it("quien no lo ha verificado no puede escribir, aunque llame a la API", async () => {
-    const usuario = await crearUsuarioDePrueba("sin-verificar", false);
+  it("quien no ha verificado el correo no puede ni iniciar sesión", async () => {
+    // La plataforma lo corta un escalón antes de lo que esperábamos: sin
+    // confirmar no hay sesión, así que no hay nada que negar después.
+    const usuario = await crearUsuarioSinConfirmar("sin-confirmar");
     try {
-      const { data } = await usuario.cliente.rpc("tiene_correo_verificado");
-      expect(data).toBe(false);
+      const error = await intentarAcceso(usuario.correo);
+      expect(error).toMatch(/not confirmed/i);
     } finally {
       await borrarUsuarioDePrueba(usuario.id);
     }
   }, 30_000);
 
-  it("quien sí lo ha verificado, puede", async () => {
+  it("quien sí lo ha verificado, puede escribir", async () => {
     const usuario = await crearUsuarioDePrueba("verificada", true);
     try {
       const { data } = await usuario.cliente.rpc("tiene_correo_verificado");
       expect(data).toBe(true);
+    } finally {
+      await borrarUsuarioDePrueba(usuario.id);
+    }
+  }, 30_000);
+
+  it("a alguien bloqueado se le niega, aunque tenga el correo verificado", async () => {
+    const usuario = await crearUsuarioDePrueba("bloqueada", true);
+    try {
+      await clienteAdministrador()
+        .from("perfiles")
+        .update({ bloqueado: true })
+        .eq("id", usuario.id);
+
+      const { data } = await usuario.cliente.rpc("tiene_correo_verificado");
+      expect(data).toBe(false);
     } finally {
       await borrarUsuarioDePrueba(usuario.id);
     }
