@@ -20,6 +20,12 @@ create table tallas (
 
 alter table tallas enable row level security;
 
+-- El proyecto está configurado para NO exponer las tablas nuevas de forma
+-- automática: una tabla nace cerrada y se abre a mano, aquí, cuando sus
+-- reglas ya están escritas. Hacen falta las dos cosas, el permiso de la
+-- tabla y la política de fila: la política sola no da acceso.
+grant select on table tallas to anon, authenticated;
+
 -- Las tallas son datos de referencia: las lee cualquiera, incluso sin
 -- sesión, porque el catálogo se ve sin cuenta. Nadie las escribe salvo con
 -- la clave de servicio, que no pasa por el navegador.
