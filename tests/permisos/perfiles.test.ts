@@ -237,23 +237,56 @@ describe.skipIf(!HAY_BASE_DE_DATOS)("verificación del correo", () => {
   }, 30_000);
 });
 
-describe.skipIf(!HAY_BASE_DE_DATOS)("las tallas de la base de datos", () => {
-  it("coinciden con la lista del código", async () => {
+describe.skipIf(!HAY_BASE_DE_DATOS)("los datos de referencia de la base", () => {
+  it("las tallas coinciden con la lista del código, etiquetas incluidas", async () => {
+    // La etiqueta se compara a propósito: lleva acentos ("2 años") y es
+    // donde se vio que una migración mal codificada los destrozaba sin que
+    // ninguna prueba se enterara.
     const { TALLAS } = await import("@/lib/tallas");
     const { data, error } = await clienteAnonimo()
       .from("tallas")
-      .select("codigo, edad_meses_min, edad_meses_max, orden")
+      .select("codigo, etiqueta, talla_eu, edad_meses_min, edad_meses_max, orden")
       .order("orden");
 
     expect(error).toBeNull();
     expect(data).toEqual(
       TALLAS.map((t) => ({
         codigo: t.codigo,
+        etiqueta: t.etiqueta,
+        talla_eu: t.tallaEu,
         edad_meses_min: t.edadMesesMin,
         edad_meses_max: t.edadMesesMax,
         orden: t.orden,
       })),
     );
+  });
+
+  it("las provincias coinciden con la lista del código, acentos incluidos", async () => {
+    const { PROVINCIAS } = await import("@/lib/provincias");
+    const { data, error } = await clienteAnonimo()
+      .from("provincias")
+      .select("codigo, nombre, slug")
+      .order("codigo");
+
+    expect(error).toBeNull();
+    expect(data).toEqual(
+      PROVINCIAS.map((p) => ({
+        codigo: p.codigo,
+        nombre: p.nombre,
+        slug: p.slug,
+      })),
+    );
+  });
+
+  it("los títulos de los textos legales conservan los acentos", async () => {
+    const { data } = await clienteAnonimo()
+      .from("documentos_legales")
+      .select("slug, titulo")
+      .eq("slug", "privacidad")
+      .eq("version", "2026-10-22")
+      .single();
+
+    expect(data?.titulo).toBe("Política de privacidad");
   });
 });
 

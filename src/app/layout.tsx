@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { PieLegal } from "@/components/PieLegal";
 import "./globals.css";
 
 /*
@@ -34,6 +35,7 @@ export default function DisposicionRaiz({
         <main id="contenido" style={{ scrollMarginTop: "var(--sp-4)" }}>
           {children}
         </main>
+        <PieLegal />
       </body>
     </html>
   );
