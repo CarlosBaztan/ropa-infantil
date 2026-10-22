@@ -79,9 +79,30 @@ create trigger perfiles_columnas_protegidas
 create or replace function crear_perfil_al_registrarse()
 returns trigger language plpgsql security definer
 set search_path = public as $$
+declare
+  fecha_nac date;
+  marketing boolean;
 begin
-  insert into perfiles (id) values (new.id)
+  -- La fecha llega validada desde el formulario, pero el registro no puede
+  -- romperse porque alguien mande basura por la API: si no se puede
+  -- convertir, se guarda vacía y ya la corregirá en su perfil.
+  begin
+    fecha_nac := (new.raw_user_meta_data ->> 'fecha_nacimiento')::date;
+  exception
+    when others then fecha_nac := null;
+  end;
+
+  begin
+    marketing := coalesce(
+      (new.raw_user_meta_data ->> 'acepta_marketing')::boolean, false);
+  exception
+    when others then marketing := false;
+  end;
+
+  insert into perfiles (id, fecha_nacimiento, acepta_marketing)
+  values (new.id, fecha_nac, marketing)
   on conflict (id) do nothing;
+
   return new;
 end;
 $$;

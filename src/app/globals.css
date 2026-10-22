@@ -316,6 +316,90 @@ label:has(> input[type="radio"]) {
   content: "⚠ ";
 }
 
+/* --- Piezas compartidas de las pantallas --- */
+
+.pagina {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-4) var(--sp-12);
+}
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.campo > label {
+  font-weight: 500;
+}
+
+.ayuda {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-sm);
+}
+
+.boton {
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: var(--c-primary);
+  color: var(--c-sobre-primario);
+  font: inherit;
+  font-weight: 600;
+  padding: 0 var(--sp-5);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--t-fast) var(--easing);
+}
+
+.boton:hover {
+  background: var(--c-primary-hover);
+}
+
+.boton-secundario {
+  background: transparent;
+  border-color: var(--c-borde-control);
+  color: var(--c-ink);
+}
+
+.boton-secundario:hover {
+  background: var(--c-surface-2);
+}
+
+/*
+ * Aviso de error. Lleva borde, icono y texto además del color: quien no
+ * distingue el rojo tiene que enterarse igual.
+ */
+.aviso-error {
+  display: flex;
+  gap: var(--sp-3);
+  border: 2px solid var(--c-danger);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  color: var(--c-ink);
+}
+
+.aviso-error::before {
+  content: "⚠";
+  color: var(--c-danger);
+  font-weight: 700;
+}
+
+.tarjeta {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+  padding: var(--sp-5);
+  box-shadow: var(--sh-1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

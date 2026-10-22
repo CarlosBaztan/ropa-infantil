@@ -53,6 +53,7 @@ const CONTRASENA_DE_PRUEBA = "contrasena-de-prueba-1234";
 export async function crearUsuarioDePrueba(
   prefijo: string,
   correoVerificado = true,
+  datosDelRegistro?: Record<string, unknown>,
 ): Promise<UsuarioDePrueba> {
   const admin = clienteAdministrador();
   const correo = `${prefijo}-${Date.now()}-${Math.random()
@@ -63,6 +64,7 @@ export async function crearUsuarioDePrueba(
     email: correo,
     password: CONTRASENA_DE_PRUEBA,
     email_confirm: correoVerificado,
+    user_metadata: datosDelRegistro,
   });
   if (error) throw error;
 

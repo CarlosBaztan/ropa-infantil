@@ -143,6 +143,59 @@ describe.skipIf(!HAY_BASE_DE_DATOS)(`permisos de perfiles`, () => {
       .eq("id", ana.id);
     expect(error).not.toBeNull();
   });
+
+  it("la base de datos rechaza una provincia que no existe", async () => {
+    const { error } = await ana.cliente
+      .from("perfiles")
+      .update({ provincia: "99" })
+      .eq("id", ana.id);
+    expect(error).not.toBeNull();
+  });
+
+  it("acepta una provincia de la lista", async () => {
+    const { error } = await ana.cliente
+      .from("perfiles")
+      .update({ provincia: "48" })
+      .eq("id", ana.id);
+    expect(error).toBeNull();
+  });
+
+  it("la fecha de nacimiento del registro llega al perfil", async () => {
+    const usuario = await crearUsuarioDePrueba("con-fecha", true, {
+      fecha_nacimiento: "1990-05-04",
+      acepta_marketing: true,
+    });
+    try {
+      const { data } = await clienteAdministrador()
+        .from("perfiles")
+        .select("fecha_nacimiento, acepta_marketing")
+        .eq("id", usuario.id)
+        .single();
+      expect(data?.fecha_nacimiento).toBe("1990-05-04");
+      expect(data?.acepta_marketing).toBe(true);
+    } finally {
+      await borrarUsuarioDePrueba(usuario.id);
+    }
+  }, 30_000);
+
+  it("una fecha de nacimiento corrupta no rompe el registro", async () => {
+    // Si alguien manda basura por la API, la cuenta debe crearse igual con
+    // la fecha vacía, no fallar el registro entero.
+    const usuario = await crearUsuarioDePrueba("fecha-mala", true, {
+      fecha_nacimiento: "no-es-una-fecha",
+    });
+    try {
+      const { data } = await clienteAdministrador()
+        .from("perfiles")
+        .select("id, fecha_nacimiento")
+        .eq("id", usuario.id)
+        .single();
+      expect(data?.id).toBe(usuario.id);
+      expect(data?.fecha_nacimiento).toBeNull();
+    } finally {
+      await borrarUsuarioDePrueba(usuario.id);
+    }
+  }, 30_000);
 });
 
 describe.skipIf(!HAY_BASE_DE_DATOS)("verificación del correo", () => {
