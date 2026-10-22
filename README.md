@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ropa infantil de segunda mano
 
-## Getting Started
+Plataforma española donde madres y padres venden la ropa que sus hijos ya no
+usan y compran la talla siguiente. Compraventa entre particulares, con el
+**lote por talla y temporada** como unidad de venta y la **entrega en mano**
+como opción destacada.
 
-First, run the development server:
+## Por dónde empezar a leer
+
+| Documento | Qué contiene |
+|---|---|
+| [`docs/analisis/`](docs/analisis/) | Análisis de viabilidad: mercado, competencia, riesgos, gastos y burocracia. **Incluye el criterio escrito de cuándo abandonar.** |
+| [`docs/superpowers/specs/`](docs/superpowers/specs/) | El diseño del hito 1: qué se construye y por qué |
+| [`docs/superpowers/plans/`](docs/superpowers/plans/) | El plan de implementación, tarea por tarea |
+
+## Poner el proyecto en marcha
 
 ```bash
+npm install
+cp .env.local.example .env.local   # y rellenar con las claves de Supabase
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Las claves están en Supabase, en *Project Settings → API Keys*. **En local se
+usan siempre las del proyecto de pruebas**, nunca las de producción.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm test` | Todas las pruebas. Las de permisos se saltan si no hay credenciales |
+| `npm run typecheck` | Comprueba los tipos |
+| `npm run lint` | Comprueba el estilo |
+| `npm run build` | Compila para producción |
 
-## Learn More
+## Base de datos
 
-To learn more about Next.js, take a look at the following resources:
+Las migraciones están en `supabase/migrations/`, numeradas y en orden.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para aplicarlas, **usa el guion y no copies los archivos a mano**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```powershell
+.\scripts\preparar-sql.ps1            # deja el SQL en el portapapeles
+.\scripts\preparar-sql.ps1 -Reinicio  # además borra antes lo que haya
+```
 
-## Deploy on Vercel
+Después se pega en el editor SQL del panel de Supabase. El guion existe
+porque PowerShell lee los archivos como texto antiguo y destroza los
+acentos: «2 años» llegó una vez a la base de datos como «2 aÃ±os» y ninguna
+prueba se enteró. El guion verifica los acentos y aborta si no sobreviven.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Cosas que conviene saber antes de tocar nada
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Las reglas de permisos viven en PostgreSQL**, no en las pantallas. Si
+  cambias algo de acceso, cámbialo en una migración y añade su prueba en
+  `tests/permisos/`.
+- **Las listas son cerradas**: tallas, provincias, categorías. Cada una
+  existe en TypeScript y en SQL, y hay pruebas que vigilan que no se
+  separen.
+- **Los precios se guardan en céntimos**, como enteros.
+- **No hay casilla de «acepto la política de privacidad»**: la privacidad se
+  informa, no se consiente. La casilla separada es solo para marketing.
+- **Los contrastes de color se comprueban solos** en
+  `tests/unidad/contraste.test.ts`, leyendo la hoja de estilos. Si tocas un
+  color y no cumple, la prueba te lo dice y por cuánto.
+- **No se carga ninguna fuente web**, para no ceder la IP del visitante a un
+  tercero.
+
+## Estado
+
+Hito 1, tramo A. Funcionan las cuentas: registro con verificación por correo,
+acceso, recuperación de contraseña, perfil y armario público. Los anuncios,
+el catálogo y la mensajería llegan en los planes 2 a 5.

@@ -18,7 +18,9 @@ param([switch]$Reinicio)
 $ErrorActionPreference = "Stop"
 $raiz = Split-Path -Parent $PSScriptRoot
 
-$reinicio = @'
+# Ojo: no llamar a esta variable $reinicio. PowerShell no distingue
+# mayusculas en los nombres, asi que machacaria el parametro -Reinicio.
+$sqlDeReinicio = @'
 begin;
 
 drop trigger if exists al_crear_usuario on auth.users;
@@ -40,7 +42,7 @@ function Leer-EnUtf8($ruta) {
     return [System.IO.File]::ReadAllText($ruta, [System.Text.Encoding]::UTF8)
 }
 
-$sql = if ($Reinicio) { $reinicio } else { "begin;`r`n`r`n" }
+$sql = if ($Reinicio) { $sqlDeReinicio } else { "begin;`r`n`r`n" }
 
 Get-ChildItem "$raiz\supabase\migrations\*.sql" | Sort-Object Name | ForEach-Object {
     $sql += (Leer-EnUtf8 $_.FullName) + "`r`n`r`n"
@@ -48,13 +50,31 @@ Get-ChildItem "$raiz\supabase\migrations\*.sql" | Sort-Object Name | ForEach-Obj
 $sql += (Leer-EnUtf8 "$raiz\supabase\seed\tallas.sql") + "`r`ncommit;`r`n"
 
 # Centinelas: si estos acentos no sobreviven, algo ha corrompido el texto.
-foreach ($control in @("2 años", "Álava", "Cádiz", "Política de privacidad")) {
+#
+# Se construyen por codigo de caracter y no escribiendolos tal cual, porque
+# PowerShell 5.1 lee tambien este guion como ANSI y los acentos literales
+# llegarian rotos aqui dentro: el vigilante caeria en la misma trampa que
+# vigila. Paso por eso una vez.
+$enie = [char]0xF1   # n con virgulilla
+$aAcc = [char]0xE1   # a con tilde
+$AAcc = [char]0xC1   # A con tilde
+$iAcc = [char]0xED   # i con tilde
+$aTil = [char]0xC3   # el sintoma tipico de un UTF-8 leido como ANSI
+
+$centinelas = @(
+    "2 a${enie}os",
+    "${AAcc}lava",
+    "C${aAcc}diz",
+    "Pol${iAcc}tica de privacidad"
+)
+
+foreach ($control in $centinelas) {
     if ($sql -notlike "*$control*") {
         throw "No encuentro '$control' intacto: el texto se ha corrompido."
     }
 }
-if ($sql -like "*Ã*") {
-    throw "El texto lleva acentos rotos (aparece 'Ã'). Abortado."
+if ($sql -like "*$aTil*") {
+    throw "El texto lleva acentos rotos. Abortado."
 }
 
 Set-Clipboard -Value $sql

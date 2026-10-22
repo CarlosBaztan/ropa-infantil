@@ -1,0 +1,51 @@
+name: Pruebas
+
+# Se ejecuta en cada subida y en cada propuesta de cambio, para que nada
+# entre roto en la rama principal.
+on:
+  push:
+  pull_request:
+
+jobs:
+  comprobar:
+    name: Tipos, estilo, pruebas y compilación
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Comprobar tipos
+        run: npm run typecheck
+
+      - name: Comprobar estilo
+        run: npm run lint
+
+      # Las pruebas de permisos, que necesitan base de datos, se saltan
+      # solas si no hay credenciales. Para activarlas aquí, añade los tres
+      # secretos del proyecto de PRUEBAS en GitHub (Settings -> Secrets and
+      # variables -> Actions) y descomenta el bloque `env` de abajo.
+      #
+      # NUNCA pongas aquí los secretos de producción: estas pruebas crean y
+      # borran usuarios sin preguntar.
+      - name: Pruebas
+        run: npm test
+        # env:
+        #   SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
+        #   SUPABASE_TEST_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_TEST_PUBLISHABLE_KEY }}
+        #   SUPABASE_TEST_SECRET_KEY: ${{ secrets.SUPABASE_TEST_SECRET_KEY }}
+
+      - name: Compilar
+        run: npm run build
+        env:
+          # Valores de relleno: la compilación solo necesita que existan.
+          # Los de verdad los pone Vercel en cada despliegue.
+          NEXT_PUBLIC_SUPABASE_URL: https://ejemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_relleno
