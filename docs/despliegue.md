@@ -22,10 +22,28 @@ entrar en tu cuenta.
 Solo dos, y son las de **producción**, no las de pruebas. Están en Supabase,
 en el proyecto `ropa-infantil-produccion`, en *Project Settings → API Keys*:
 
-| Nombre | Valor |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://mvdnoxdkychfgsyqkhrb.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | La clave que empieza por `sb_publishable_` |
+**Cuidado al copiar: sin comillas ni acentos graves alrededor.** Si copias de
+un texto con formato, es fácil que se cuelen y Vercel los toma como parte del
+nombre o del valor. Los campos tienen que quedar exactamente así:
+
+Primera variable — nombre:
+
+    NEXT_PUBLIC_SUPABASE_URL
+
+valor:
+
+    https://mvdnoxdkychfgsyqkhrb.supabase.co
+
+Segunda variable — nombre:
+
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+
+valor: la clave del proyecto de producción que empieza por sb_publishable_
+(Supabase → Project Settings → API Keys → Publishable key).
+
+No marques ninguna de las dos como *sensible*: son públicas por definición
+—viajan al navegador de cada visitante— y marcarlas solo impide que puedas
+volver a leerlas desde el panel.
 
 **La clave secreta NO se pone en Vercel.** La aplicación no la usa: actúa
 siempre en nombre de quien ha iniciado sesión, y quien decide qué puede
