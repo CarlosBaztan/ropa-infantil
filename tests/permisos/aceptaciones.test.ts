@@ -57,8 +57,42 @@ describe.skipIf(!HAY_BASE_DE_DATOS)("permisos de las aceptaciones", () => {
   });
 
   it("cada quien ve solo sus propias aceptaciones", async () => {
+    // Berta registra la suya primero: sin ella, la comprobacion recorreria
+    // una lista vacia y pasaria aunque la politica de lectura estuviera
+    // rota. Una prueba que pasa sin datos no prueba nada.
+    await berta.cliente.from("aceptaciones").insert({
+      usuario: berta.id,
+      documento_slug: "cookies",
+      documento_version: VERSION,
+    });
+
     const { data } = await berta.cliente.from("aceptaciones").select("usuario");
-    expect(data?.every((fila) => fila.usuario === berta.id)).toBe(true);
+    expect(data).toHaveLength(1);
+    expect(data?.[0]?.usuario).toBe(berta.id);
+  });
+
+  it("la fecha de una aceptación no se puede inventar al crearla", async () => {
+    // Si se pudiera elegir la fecha, el registro no serviria como prueba
+    // de cuando se acepto: bastaria con escribir la que convenga.
+    await ana.cliente.from("aceptaciones").insert({
+      usuario: ana.id,
+      documento_slug: "aviso-legal",
+      documento_version: VERSION,
+      fecha: "2020-01-01T00:00:00Z",
+    });
+
+    const { data } = await clienteAdministrador()
+      .from("aceptaciones")
+      .select("fecha")
+      .eq("usuario", ana.id)
+      .eq("documento_slug", "aviso-legal")
+      .maybeSingle();
+
+    // O se rechaza la inserción, o se guarda con la fecha real. Lo que no
+    // puede pasar es que quede grabado el 2020.
+    if (data) {
+      expect(new Date(data.fecha).getFullYear()).toBeGreaterThanOrEqual(2026);
+    }
   });
 
   it("una aceptación no se puede modificar: es un hecho con fecha", async () => {

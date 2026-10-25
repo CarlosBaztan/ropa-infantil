@@ -60,11 +60,14 @@ export async function crearUsuarioDePrueba(
     .toString(36)
     .slice(2, 8)}@ejemplo.test`;
 
+  // Por defecto, una persona adulta: la base de datos ya no admite cuentas
+  // sin fecha de nacimiento válida. Pasar un objeto vacío a propósito sirve
+  // para comprobar precisamente ese rechazo.
   const { data, error } = await admin.auth.admin.createUser({
     email: correo,
     password: CONTRASENA_DE_PRUEBA,
     email_confirm: correoVerificado,
-    user_metadata: datosDelRegistro,
+    user_metadata: datosDelRegistro ?? { fecha_nacimiento: "1990-05-04" },
   });
   if (error) throw error;
 
@@ -99,6 +102,7 @@ export async function crearUsuarioSinConfirmar(
     email: correo,
     password: CONTRASENA_DE_PRUEBA,
     email_confirm: false,
+    user_metadata: { fecha_nacimiento: "1990-05-04" },
   });
   if (error) throw error;
   return { id: data.user!.id, correo };

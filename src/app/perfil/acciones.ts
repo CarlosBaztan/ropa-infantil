@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { esCodigoDeProvincia } from "@/lib/provincias";
 import { clienteServidor } from "@/lib/supabase/servidor";
-import { validarAlias } from "@/lib/validacion/perfil";
+import { edadEnAnios, validarAlias } from "@/lib/validacion/perfil";
 
 function volverConError(mensaje: string): never {
   redirect(`/perfil?error=${encodeURIComponent(mensaje)}`);
@@ -30,12 +30,24 @@ export async function guardarPerfil(datos: FormData): Promise<void> {
     volverConError("El nombre de la ciudad es demasiado largo.");
   }
 
+  const fechaNacimiento = String(datos.get("fecha_nacimiento") ?? "");
+  const edad = edadEnAnios(fechaNacimiento);
+  if (edad === null) volverConError("Revisa la fecha de nacimiento.");
+  if (edad < 18) {
+    volverConError("Para comprar y vender hay que tener 18 años o más.");
+  }
+
   const { error } = await supabase
     .from("perfiles")
     .update({
       alias: resultadoAlias.valor,
       provincia,
       ciudad: ciudad.length > 0 ? ciudad : null,
+      fecha_nacimiento: fechaNacimiento,
+      // La política de privacidad promete que se puede retirar cuando se
+      // quiera, y el RGPD exige que retirarlo sea tan fácil como darlo.
+      // Desmarcar la casilla y guardar es exactamente eso.
+      acepta_marketing: datos.get("acepta_marketing") === "on",
     })
     .eq("id", user.id);
 

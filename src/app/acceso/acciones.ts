@@ -35,8 +35,13 @@ export async function pedirEnlaceDeRecuperacion(
   const supabase = await clienteServidor();
   const origen = await origenDeLaPeticion();
 
+  // Se le dice al retorno dónde aterrizar: quien viene de recuperar la
+  // contraseña tiene que caer en la pantalla de cambiarla, no en un
+  // «cuenta confirmada, ponte un alias» que no viene a cuento.
+  const destino = encodeURIComponent("/perfil?recuperar=1");
+
   await supabase.auth.resetPasswordForEmail(correo, {
-    redirectTo: `${origen}/auth/callback`,
+    redirectTo: `${origen}/auth/callback?next=${destino}`,
   });
 
   // Siempre se contesta lo mismo, exista o no la cuenta: lo contrario

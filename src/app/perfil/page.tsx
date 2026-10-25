@@ -14,6 +14,8 @@ interface Perfil {
   alias: string | null;
   provincia: string | null;
   ciudad: string | null;
+  fecha_nacimiento: string | null;
+  acepta_marketing: boolean;
 }
 
 export default async function Perfil({
@@ -24,9 +26,11 @@ export default async function Perfil({
     guardado?: string;
     contrasena?: string;
     bienvenida?: string;
+    recuperar?: string;
   }>;
 }) {
-  const { error, guardado, contrasena, bienvenida } = await searchParams;
+  const { error, guardado, contrasena, bienvenida, recuperar } =
+    await searchParams;
 
   const supabase = await clienteServidor();
   const {
@@ -36,10 +40,16 @@ export default async function Perfil({
 
   const { data } = await supabase
     .from("perfiles")
-    .select("alias, provincia, ciudad")
+    .select("alias, provincia, ciudad, fecha_nacimiento, acepta_marketing")
     .eq("id", user.id)
     .single();
-  const perfil = (data ?? { alias: null, provincia: null, ciudad: null }) as Perfil;
+  const perfil = (data ?? {
+    alias: null,
+    provincia: null,
+    ciudad: null,
+    fecha_nacimiento: null,
+    acepta_marketing: false,
+  }) as Perfil;
 
   return (
     <div className="pagina">
@@ -50,6 +60,13 @@ export default async function Perfil({
       {bienvenida ? (
         <p className="tarjeta" style={{ marginTop: "var(--sp-5)" }}>
           Cuenta confirmada. Ponte un alias y ya podrás publicar.
+        </p>
+      ) : null}
+
+      {recuperar ? (
+        <p className="tarjeta" style={{ marginTop: "var(--sp-5)" }}>
+          Ya has entrado. Elige una contraseña nueva abajo, en{" "}
+          <strong>Cambiar la contraseña</strong>.
         </p>
       ) : null}
 
@@ -131,6 +148,37 @@ export default async function Perfil({
             No pongas tu dirección. Solo sirve para que te encuentren cerca.
           </span>
         </div>
+
+        <div className="campo">
+          <label htmlFor="fecha_nacimiento">Fecha de nacimiento</label>
+          <input
+            id="fecha_nacimiento"
+            name="fecha_nacimiento"
+            type="date"
+            defaultValue={perfil.fecha_nacimiento ?? ""}
+            required
+            aria-describedby="ayuda-edad"
+          />
+          <span id="ayuda-edad" className="ayuda">
+            No se muestra a nadie. Hace falta porque comprar y vender son
+            contratos y hay que ser mayor de edad.
+          </span>
+        </div>
+
+        {/* Retirar el consentimiento tiene que ser tan fácil como darlo:
+            desmarcar y guardar. Lo exige el RGPD y lo promete la política
+            de privacidad. */}
+        <label>
+          <input
+            type="checkbox"
+            name="acepta_marketing"
+            defaultChecked={perfil.acepta_marketing}
+          />
+          <span>
+            Quiero recibir avisos por correo de novedades y consejos.
+            Desmárcalo y guarda para dejar de recibirlos.
+          </span>
+        </label>
 
         <button type="submit" className="boton">
           Guardar

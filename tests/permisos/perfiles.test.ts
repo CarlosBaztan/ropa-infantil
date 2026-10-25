@@ -178,24 +178,99 @@ describe.skipIf(!HAY_BASE_DE_DATOS)(`permisos de perfiles`, () => {
     }
   }, 30_000);
 
-  it("una fecha de nacimiento corrupta no rompe el registro", async () => {
-    // Si alguien manda basura por la API, la cuenta debe crearse igual con
-    // la fecha vacía, no fallar el registro entero.
-    const usuario = await crearUsuarioDePrueba("fecha-mala", true, {
-      fecha_nacimiento: "no-es-una-fecha",
+  it("la base de datos rechaza la cuenta de un menor, aunque llame a la API", async () => {
+    // La edad minima es una obligacion legal, no una comodidad del
+    // formulario: tiene que vivir en la base de datos. Quien llame a la
+    // API de registro directamente con la fecha de un menor no debe
+    // conseguir cuenta.
+    const hace10Anios = new Date();
+    hace10Anios.setFullYear(hace10Anios.getFullYear() - 10);
+    const fecha = hace10Anios.toISOString().slice(0, 10);
+
+    await expect(
+      crearUsuarioDePrueba("menor", true, { fecha_nacimiento: fecha }),
+    ).rejects.toThrow();
+  }, 30_000);
+
+  it("la base de datos rechaza una cuenta sin fecha de nacimiento", async () => {
+    await expect(crearUsuarioDePrueba("sin-fecha", true, {})).rejects.toThrow();
+  }, 30_000);
+
+  it("la base de datos rechaza una fecha de nacimiento corrupta", async () => {
+    await expect(
+      crearUsuarioDePrueba("fecha-mala", true, {
+        fecha_nacimiento: "no-es-una-fecha",
+      }),
+    ).rejects.toThrow();
+  }, 30_000);
+
+  it("deja pasar a quien cumple exactamente 18 años hoy", async () => {
+    // El limite tiene que dejar pasar, no rechazar por un dia. Y medido
+    // por el calendario de Espana, no por el de Greenwich.
+    const hoyEnMadrid = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Madrid",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    const [anio, mes, dia] = hoyEnMadrid.split("-");
+    const fecha = `${Number(anio) - 18}-${mes}-${dia}`;
+
+    const usuario = await crearUsuarioDePrueba("justo-18", true, {
+      fecha_nacimiento: fecha,
     });
     try {
       const { data } = await clienteAdministrador()
         .from("perfiles")
-        .select("id, fecha_nacimiento")
+        .select("fecha_nacimiento")
         .eq("id", usuario.id)
         .single();
-      expect(data?.id).toBe(usuario.id);
-      expect(data?.fecha_nacimiento).toBeNull();
+      expect(data?.fecha_nacimiento).toBe(fecha);
     } finally {
       await borrarUsuarioDePrueba(usuario.id);
     }
   }, 30_000);
+
+  it("nadie puede cambiarse la fecha de nacimiento a la de un menor", async () => {
+    const { error } = await ana.cliente
+      .from("perfiles")
+      .update({ fecha_nacimiento: "2015-01-01" })
+      .eq("id", ana.id);
+    expect(error).not.toBeNull();
+  });
+
+  it("nadie puede ponerse una fecha de nacimiento futura", async () => {
+    const { error } = await ana.cliente
+      .from("perfiles")
+      .update({ fecha_nacimiento: "2040-01-01" })
+      .eq("id", ana.id);
+    expect(error).not.toBeNull();
+  });
+
+  it("sí puede corregir su fecha de nacimiento por otra válida", async () => {
+    const { error } = await ana.cliente
+      .from("perfiles")
+      .update({ fecha_nacimiento: "1988-03-15" })
+      .eq("id", ana.id);
+    expect(error).toBeNull();
+  });
+
+  it("puede retirar el consentimiento de marketing", async () => {
+    // La politica de privacidad promete que se puede retirar cuando se
+    // quiera, y el RGPD exige que sea tan facil como darlo.
+    const { error } = await ana.cliente
+      .from("perfiles")
+      .update({ acepta_marketing: false })
+      .eq("id", ana.id);
+    expect(error).toBeNull();
+
+    const { data } = await clienteAdministrador()
+      .from("perfiles")
+      .select("acepta_marketing")
+      .eq("id", ana.id)
+      .single();
+    expect(data?.acepta_marketing).toBe(false);
+  });
 });
 
 describe.skipIf(!HAY_BASE_DE_DATOS)("verificación del correo", () => {
