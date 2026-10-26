@@ -81,6 +81,25 @@ if ($sql -like "*$aTil*") {
     throw "El texto lleva acentos rotos. Abortado."
 }
 
-Set-Clipboard -Value $sql
-Write-Output "SQL en el portapapeles: $($sql.Length) caracteres, acentos verificados."
+# Fuera la marca de orden de bytes, si se ha colado al leer algún archivo.
+# PostgreSQL no la entiende y responde "syntax error at or near begin",
+# señalando a una palabra que parece correcta: se pierde un buen rato
+# buscando un error que no está donde parece.
+$sql = $sql.TrimStart([char]0xFEFF)
+if ($sql[0] -ne 'b') {
+    throw "El SQL no empieza por 'begin': lleva algo delante."
+}
+
+$copiado = $false
+foreach ($intento in 1..8) {
+    try { Set-Clipboard -Value $sql -ErrorAction Stop; $copiado = $true; break }
+    catch { Start-Sleep -Milliseconds 500 }   # el portapapeles lo ocupa otro
+}
+if (-not $copiado) { throw "No se ha podido acceder al portapapeles." }
+
+if ((Get-Clipboard -Raw)[0] -ne 'b') {
+    throw "Lo que hay en el portapapeles no empieza por 'begin'."
+}
+
+Write-Output "SQL en el portapapeles: $($sql.Length) caracteres, acentos y comienzo verificados."
 Write-Output "Pegalo en el editor SQL del proyecto de PRUEBAS y ejecutalo."
