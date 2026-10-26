@@ -86,6 +86,35 @@ No des el despliegue por bueno hasta haber hecho esto, **desde el móvil**:
 - **Que un abogado revise los cuatro textos.** Están escritos con criterio,
   pero no por un abogado.
 
+## Activar el acceso con Google
+
+El código está hecho y probado, pero **el botón no aparece** hasta que
+existan las credenciales, que solo puedes crear tú. Mientras tanto la web
+funciona con correo y contraseña con normalidad.
+
+1. En **console.cloud.google.com**, crea un proyecto.
+2. *APIs y servicios → Pantalla de consentimiento de OAuth*: tipo
+   **Externo**, pon el nombre de la plataforma y tu correo de contacto.
+3. *Credenciales → Crear credenciales → ID de cliente de OAuth*, tipo
+   **Aplicación web**. En **URI de redirección autorizados** pega la que
+   te da Supabase en *Authentication → Sign In / Providers → Google*
+   (termina en `/auth/v1/callback`).
+4. Copia el **ID de cliente** y el **secreto de cliente** y pégalos en esa
+   misma pantalla de Supabase, en el proyecto de **producción**. Activa el
+   proveedor.
+5. En Vercel, añade la variable `NEXT_PUBLIC_ACCESO_GOOGLE` con valor `1`
+   y vuelve a desplegar. El botón aparecerá.
+
+Para que funcione también en tu equipo, repite los pasos 3 y 4 en el
+proyecto de **pruebas** y añade la misma variable a tu `.env.local`.
+
+**Una consecuencia que conviene entender:** quien entre con Google no pasa
+por nuestro formulario, así que no declara su fecha de nacimiento. La
+cuenta se crea igual, pero **no podrá publicar ni escribir a nadie hasta
+rellenarla en su perfil**, y al entrar verá un aviso diciéndoselo. La
+edad mínima sigue siendo obligatoria; se exige al contratar, que es donde
+la ley la pide, en lugar de al entrar.
+
 ## Un aviso sobre el correo
 
 Supabase envía los correos de verificación con un servicio compartido y muy

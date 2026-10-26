@@ -63,6 +63,18 @@ export default async function Perfil({
         </p>
       ) : null}
 
+      {/* Quien entra con Google llega sin fecha de nacimiento: tiene
+          cuenta, pero no podrá publicar hasta declararla. */}
+      {perfil.fecha_nacimiento === null ? (
+        <p role="alert" className="aviso-error" style={{ marginTop: "var(--sp-5)" }}>
+          <span>
+            Falta tu fecha de nacimiento. Hasta que la pongas no podrás
+            publicar ni escribir a nadie: comprar y vender son contratos y
+            hay que ser mayor de edad.
+          </span>
+        </p>
+      ) : null}
+
       {recuperar ? (
         <p className="tarjeta" style={{ marginTop: "var(--sp-5)" }}>
           Ya has entrado. Elige una contraseña nueva abajo, en{" "}

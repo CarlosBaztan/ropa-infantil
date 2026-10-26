@@ -28,6 +28,34 @@ export async function entrar(datos: FormData): Promise<void> {
   redirect("/perfil");
 }
 
+/**
+ * Manda a la persona a Google y vuelve por /auth/callback.
+ *
+ * Quien entra así no pasa por nuestro formulario, de modo que no declara
+ * su fecha de nacimiento: la cuenta se crea sin ella y no podrá publicar
+ * hasta rellenarla en su perfil. La edad mínima sigue siendo obligatoria,
+ * solo que se exige al publicar y no al entrar.
+ */
+export async function entrarConGoogle(): Promise<void> {
+  const supabase = await clienteServidor();
+  const origen = await origenDeLaPeticion();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origen}/auth/callback` },
+  });
+
+  if (error || !data.url) {
+    redirect(
+      `/acceso?error=${encodeURIComponent(
+        "No hemos podido conectar con Google. Prueba con tu correo.",
+      )}`,
+    );
+  }
+
+  redirect(data.url);
+}
+
 export async function pedirEnlaceDeRecuperacion(
   datos: FormData,
 ): Promise<void> {

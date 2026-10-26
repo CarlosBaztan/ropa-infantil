@@ -53,6 +53,12 @@ más bloquea.
 - [ ] **Darse de alta como autónomo** y contratar asesoría. El cálculo de
       costes está en el análisis de viabilidad.
 
+## Para activar el acceso con Google
+
+- [ ] **Crear las credenciales en Google Cloud** y pegarlas en Supabase.
+      El código está hecho y probado; el botón no aparece hasta que
+      existan. Los pasos están en `docs/despliegue.md`.
+
 ## Deuda técnica anotada, sin prisa
 
 - [ ] Alojar la tipografía Inter en el propio servidor, para cumplir el

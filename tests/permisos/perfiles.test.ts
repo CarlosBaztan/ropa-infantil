@@ -192,8 +192,25 @@ describe.skipIf(!HAY_BASE_DE_DATOS)(`permisos de perfiles`, () => {
     ).rejects.toThrow();
   }, 30_000);
 
-  it("la base de datos rechaza una cuenta sin fecha de nacimiento", async () => {
-    await expect(crearUsuarioDePrueba("sin-fecha", true, {})).rejects.toThrow();
+  it("sin fecha de nacimiento hay cuenta, pero no se puede publicar", async () => {
+    // Es el caso de quien entra con Google: no pasa por nuestro
+    // formulario, así que no la da. La cuenta existe, pero la exigencia
+    // legal se mantiene donde importa: no puede contratar hasta
+    // declararla.
+    const usuario = await crearUsuarioDePrueba("sin-fecha", true, {});
+    try {
+      const { data: perfil } = await clienteAdministrador()
+        .from("perfiles")
+        .select("fecha_nacimiento")
+        .eq("id", usuario.id)
+        .single();
+      expect(perfil?.fecha_nacimiento).toBeNull();
+
+      const { data: puede } = await usuario.cliente.rpc("puede_publicar");
+      expect(puede).toBe(false);
+    } finally {
+      await borrarUsuarioDePrueba(usuario.id);
+    }
   }, 30_000);
 
   it("la base de datos rechaza una fecha de nacimiento corrupta", async () => {
@@ -286,10 +303,10 @@ describe.skipIf(!HAY_BASE_DE_DATOS)("verificación del correo", () => {
     }
   }, 30_000);
 
-  it("quien sí lo ha verificado, puede escribir", async () => {
+  it("quien sí lo ha verificado y es mayor de edad, puede publicar", async () => {
     const usuario = await crearUsuarioDePrueba("verificada", true);
     try {
-      const { data } = await usuario.cliente.rpc("tiene_correo_verificado");
+      const { data } = await usuario.cliente.rpc("puede_publicar");
       expect(data).toBe(true);
     } finally {
       await borrarUsuarioDePrueba(usuario.id);
@@ -304,7 +321,7 @@ describe.skipIf(!HAY_BASE_DE_DATOS)("verificación del correo", () => {
         .update({ bloqueado: true })
         .eq("id", usuario.id);
 
-      const { data } = await usuario.cliente.rpc("tiene_correo_verificado");
+      const { data } = await usuario.cliente.rpc("puede_publicar");
       expect(data).toBe(false);
     } finally {
       await borrarUsuarioDePrueba(usuario.id);

@@ -27,6 +27,7 @@ drop trigger if exists al_crear_usuario on auth.users;
 drop function if exists crear_perfil_al_registrarse() cascade;
 drop function if exists proteger_columnas_de_perfil() cascade;
 drop function if exists tiene_correo_verificado() cascade;
+drop function if exists puede_publicar() cascade;
 drop function if exists comprobar_mayoria_de_edad(date) cascade;
 drop function if exists comprobar_edad_al_editar() cascade;
 drop function if exists sellar_fecha_de_aceptacion() cascade;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BotonGoogle } from "@/components/BotonGoogle";
 import { registrar } from "./acciones";
 
 export const metadata: Metadata = {
@@ -36,7 +37,11 @@ export default async function Registro({
         </p>
       ) : null}
 
-      <form action={registrar} className="pila" style={{ marginTop: "var(--sp-6)" }}>
+      <div className="pila" style={{ marginTop: "var(--sp-6)" }}>
+        <BotonGoogle texto="Crear cuenta con Google" />
+      </div>
+
+      <form action={registrar} className="pila" style={{ marginTop: "var(--sp-4)" }}>
         <div className="campo">
           <label htmlFor="correo">Correo electrónico</label>
           <input

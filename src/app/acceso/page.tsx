@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BotonGoogle } from "@/components/BotonGoogle";
 import { entrar } from "./acciones";
 
 export const metadata: Metadata = {
@@ -30,7 +31,11 @@ export default async function Acceso({
         </p>
       ) : null}
 
-      <form action={entrar} className="pila" style={{ marginTop: "var(--sp-6)" }}>
+      <div className="pila" style={{ marginTop: "var(--sp-6)" }}>
+        <BotonGoogle texto="Entrar con Google" />
+      </div>
+
+      <form action={entrar} className="pila" style={{ marginTop: "var(--sp-4)" }}>
         <div className="campo">
           <label htmlFor="correo">Correo electrónico</label>
           <input
