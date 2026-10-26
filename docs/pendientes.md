@@ -63,7 +63,13 @@ más bloquea.
 
 - [ ] Alojar la tipografía Inter en el propio servidor, para cumplir el
       diseño sin cargarla de un tercero.
-- [ ] Activar en la integración continua las pruebas de permisos, añadiendo
-      los secretos del proyecto de pruebas en GitHub. Las tres líneas que
-      hay que descomentar están en `.github/workflows/pruebas.yml`.
+- [ ] **Activar en la integración continua las pruebas de permisos.** Lo
+      intenté y el sistema de seguridad me lo impidió, con razón: escribir
+      en un almacén de secretos no es algo que deba hacer sin ti delante.
+      Hay que añadir `SUPABASE_TEST_URL`, `SUPABASE_TEST_PUBLISHABLE_KEY` y
+      `SUPABASE_TEST_SECRET_KEY` en GitHub (*Settings → Secrets and
+      variables → Actions*) y descomentar las tres líneas señaladas en
+      `.github/workflows/pruebas.yml`. **Solo las del proyecto de pruebas,
+      nunca las de producción**: esas pruebas crean y borran usuarios sin
+      preguntar.
 - [ ] Quitar el ruido de `vitest.config.ts`, que se carga como CommonJS.
