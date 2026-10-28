@@ -412,3 +412,99 @@ label:has(> input[type="radio"]) {
     scroll-behavior: auto !important;
   }
 }
+
+/* --- La ficha de un anuncio --- */
+
+/*
+ * Las fotos, en una tira que se arrastra con el pulgar. Sin JavaScript:
+ * es desplazamiento nativo con anclaje, así que funciona antes de que
+ * cargue nada y respeta el gesto al que ya está acostumbrada la gente.
+ */
+.galeria {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  border-radius: var(--r-lg);
+  background: var(--c-surface-2);
+}
+
+.galeria > img {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  /* Ancho y alto van también en el atributo, con las medidas reales de
+   * cada foto: así el hueco se reserva antes de que la imagen llegue y la
+   * página no da el salto que tanto molesta en el móvil. */
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
+}
+
+/* Distintivo: lote, reservada, vendida. Lleva texto, no solo color. */
+.distintivo {
+  display: inline-block;
+  border-radius: var(--r-full);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  background: var(--c-surface-2);
+  color: var(--c-ink);
+}
+
+.distintivo-lote {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+.distintivo-vendida {
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+}
+
+.ficha-precio {
+  font-size: var(--fs-3xl);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+}
+
+/* La ficha técnica, en dos columnas que se apilan si no caben. */
+.datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+.datos > dt {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-sm);
+}
+
+.datos > dd {
+  font-weight: 500;
+}
+
+.rejilla-anuncios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--sp-4);
+}
+
+.tarjeta-anuncio {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tarjeta-anuncio img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  background: var(--c-surface-2);
+}
+
+.tarjeta-anuncio:hover .titulo-tarjeta {
+  text-decoration: underline;
+}

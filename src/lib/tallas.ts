@@ -80,6 +80,11 @@ export const TALLAS: readonly Talla[] = [
   enAnios(14, "164", 190),
 ];
 
+/** La talla de un codigo, o null si ese codigo no esta en la lista. */
+export function tallaPorCodigo(codigo: string): Talla | null {
+  return TALLAS.find((talla) => talla.codigo === codigo) ?? null;
+}
+
 /**
  * La talla que le corresponde por edad. Es una sugerencia, no una verdad:
  * los niños varían mucho y en el perfil del niño la talla real manda sobre

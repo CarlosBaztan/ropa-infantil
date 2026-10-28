@@ -6,7 +6,7 @@
 
 import { aCentimos } from "@/lib/anuncios/precio";
 import { esCategoria, esEstado, etiquetaDe, CATEGORIAS } from "@/lib/anuncios/modelo";
-import { TALLAS } from "@/lib/tallas";
+import { TALLAS, tallaPorCodigo } from "@/lib/tallas";
 import type { Resultado } from "@/lib/validacion/perfil";
 
 export interface EntradaAnuncio {
@@ -115,10 +115,6 @@ export function validarAnuncio(
   return { valido: true, valor: { ...entrada, titulo } };
 }
 
-function etiquetaDeTalla(codigo: string): string | null {
-  return TALLAS.find((t) => t.codigo === codigo)?.etiqueta ?? null;
-}
-
 /**
  * El título que se propone solo, y que la persona puede cambiar.
  *
@@ -126,14 +122,14 @@ function etiquetaDeTalla(codigo: string): string | null {
  * llegar al título ya hay uno escrito, se sigue adelante.
  */
 export function tituloSugerido(entrada: EntradaAnuncio): string {
-  const talla = etiquetaDeTalla(entrada.talla);
+  const talla = tallaPorCodigo(entrada.talla)?.etiqueta ?? null;
   const categoria = etiquetaDe(CATEGORIAS, entrada.categoria);
   if (!talla || !categoria) return "";
 
   if (entrada.tipo === "lote") {
     const piezas = entrada.numeroPiezas ?? 0;
     const hasta = entrada.tallaHasta
-      ? etiquetaDeTalla(entrada.tallaHasta)
+      ? tallaPorCodigo(entrada.tallaHasta)?.etiqueta ?? null
       : null;
     const rango = hasta ? `${talla} a ${hasta}` : talla;
     return `Lote de ${piezas} ${categoria.toLowerCase()} · talla ${rango}`;

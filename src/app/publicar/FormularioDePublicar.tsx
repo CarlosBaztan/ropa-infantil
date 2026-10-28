@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { aSlug, direccionDeAnuncio } from "@/lib/anuncios/direccion";
 import { aCentimos, formatearPrecio, precioPorPieza } from "@/lib/anuncios/precio";
 import type { OpcionConEtiqueta } from "@/lib/anuncios/modelo";
 import { tituloSugerido, validarAnuncio } from "@/lib/anuncios/validacion";
@@ -261,7 +262,7 @@ export function FormularioDePublicar(props: Props) {
       /* da igual */
     }
 
-    router.push(`/anuncio/${creado.slug}-${creado.id_publico}`);
+    router.push(direccionDeAnuncio(creado.slug, creado.id_publico));
   }
 
   return (
@@ -621,15 +622,4 @@ function Selector({
       </select>
     </div>
   );
-}
-
-/** Texto legible dentro de una dirección: sin acentos, espacios ni signos. */
-function aSlug(texto: string): string {
-  return texto
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
 }
