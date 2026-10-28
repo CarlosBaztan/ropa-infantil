@@ -141,6 +141,44 @@ export async function buscarAlternativas(
   return (data as unknown as ResumenDeAnuncio[] | null) ?? [];
 }
 
+export interface AnuncioPropio extends ResumenDeAnuncio {
+  id: string;
+  situacion: "activa" | "reservada" | "vendida" | "retirada";
+  talla: string;
+  publicado_el: string;
+  vendido_el: string | null;
+}
+
+/**
+ * Los anuncios de una persona, los cuatro estados incluidos.
+ *
+ * Los retirados entran a propósito: ahí es donde acaba un anuncio cuya
+ * subida de fotos falló a mitad, y si no se vieran se habría perdido todo
+ * lo que escribió sin saber por qué.
+ *
+ * El filtro por vendedor no es la seguridad —de eso se encarga el control
+ * de filas— sino la consulta: sin él PostgreSQL traería también los
+ * anuncios ajenos que esa persona sí puede ver.
+ */
+export async function buscarMisAnuncios(
+  supabase: SupabaseClient,
+  quien: string,
+): Promise<AnuncioPropio[]> {
+  const { data, error } = await supabase
+    .from("anuncios")
+    .select(
+      "id, id_publico, slug, titulo, precio_centimos, tipo, numero_piezas, situacion, talla, publicado_el, vendido_el, fotos ( ruta )",
+    )
+    .eq("vendedor", quien)
+    .order("publicado_el", { ascending: false });
+
+  if (error) {
+    console.error("[mis-anuncios] la consulta ha fallado:", error.message);
+  }
+
+  return (data as unknown as AnuncioPropio[] | null) ?? [];
+}
+
 /** La dirección pública de una foto en el almacén. */
 export function urlDeFoto(supabase: SupabaseClient, ruta: string): string {
   return supabase.storage.from("anuncios").getPublicUrl(ruta).data.publicUrl;
