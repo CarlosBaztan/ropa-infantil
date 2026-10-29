@@ -41,19 +41,31 @@ más bloquea.
       no hay nada dentro, ni claves ni código. **No borres
       `OneDrive\Escritorio\APP mami`: ahí vive el proyecto.**
 
-## Las migraciones que faltan en producción
+## Las migraciones que faltan
 
-La base de pruebas va por la 0010. La de producción se quedó en la 0007,
-así que allí todavía no existen los anuncios. Hay que aplicar, **en este
-orden y en el proyecto `ropa-infantil-produccion`**:
+Dos cosas distintas, y conviene hacerlas en este orden.
+
+**1. La 0011 en PRUEBAS.** Es la única migración escrita que no se ha
+ejecutado todavía en ningún sitio: me quedé sin poder llegar al panel al
+final de la sesión. Hace que cada perfil nazca con un alias puesto
+(`familia-a1b2c3`), porque ahora mismo se puede publicar un anuncio sin
+tener ninguno y la ficha se queda sin forma de nombrar a quien vende.
+Pégala sola en el editor SQL del proyecto **de pruebas** y dime que está:
+hay que ejecutarla ahí y pasar las pruebas antes de que toque producción.
+Una migración no debería estrenarse en producción.
+
+**2. De la 0008 a la 0011 en PRODUCCIÓN.** Allí la base se quedó en la
+0007, así que todavía no existen los anuncios y publicar en la web
+desplegada da error. Hay que aplicar, en este orden, en el proyecto
+`ropa-infantil-produccion`:
 
       0008_anuncios.sql
       0009_fotos.sql
       0010_cerrar_los_permisos_de_columna.sql
+      0011_todo_el_mundo_tiene_alias.sql
 
-Con `.\scripts\preparar-sql.ps1` se copia todo junto al portapapeles; se
-pega en el editor SQL del panel de Supabase y se ejecuta. Hasta que estén,
-publicar en la web desplegada da error.
+Con `.\scripts\preparar-sql.ps1` se copian todas juntas al portapapeles;
+se pegan en el editor SQL del panel de Supabase y se ejecutan.
 
 ## Para que el proyecto avance
 
