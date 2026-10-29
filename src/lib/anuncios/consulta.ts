@@ -9,6 +9,10 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  CAMPOS_DE_TARJETA,
+  type ResumenDeAnuncio,
+} from "@/lib/anuncios/catalogo";
 
 /**
  * El vendedor se pide con `!vendedor` a propósito: la tabla tiene dos
@@ -105,16 +109,6 @@ export async function buscarAnuncio(
   return anuncio;
 }
 
-export interface ResumenDeAnuncio {
-  id_publico: string;
-  slug: string;
-  titulo: string;
-  precio_centimos: number;
-  tipo: "prenda" | "lote";
-  numero_piezas: number | null;
-  fotos: { ruta: string }[];
-}
-
 /**
  * Otros anuncios vivos de la misma talla, para la ficha de uno vendido.
  *
@@ -131,7 +125,7 @@ export async function buscarAlternativas(
 ): Promise<ResumenDeAnuncio[]> {
   const { data } = await supabase
     .from("anuncios")
-    .select("id_publico, slug, titulo, precio_centimos, tipo, numero_piezas, fotos ( ruta )")
+    .select(CAMPOS_DE_TARJETA)
     .eq("talla", talla)
     .eq("situacion", "activa")
     .neq("id_publico", excluir)
@@ -143,8 +137,6 @@ export async function buscarAlternativas(
 
 export interface AnuncioPropio extends ResumenDeAnuncio {
   id: string;
-  situacion: "activa" | "reservada" | "vendida" | "retirada";
-  talla: string;
   publicado_el: string;
   vendido_el: string | null;
 }
@@ -166,9 +158,7 @@ export async function buscarMisAnuncios(
 ): Promise<AnuncioPropio[]> {
   const { data, error } = await supabase
     .from("anuncios")
-    .select(
-      "id, id_publico, slug, titulo, precio_centimos, tipo, numero_piezas, situacion, talla, publicado_el, vendido_el, fotos ( ruta )",
-    )
+    .select(`id, publicado_el, vendido_el, ${CAMPOS_DE_TARJETA}`)
     .eq("vendedor", quien)
     .order("publicado_el", { ascending: false });
 
@@ -179,7 +169,3 @@ export async function buscarMisAnuncios(
   return (data as unknown as AnuncioPropio[] | null) ?? [];
 }
 
-/** La dirección pública de una foto en el almacén. */
-export function urlDeFoto(supabase: SupabaseClient, ruta: string): string {
-  return supabase.storage.from("anuncios").getPublicUrl(ruta).data.publicUrl;
-}

@@ -486,7 +486,7 @@ label:has(> input[type="radio"]) {
 
 .rejilla-anuncios {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
   gap: var(--sp-4);
 }
 
@@ -496,13 +496,45 @@ label:has(> input[type="radio"]) {
   text-decoration: none;
 }
 
-.tarjeta-anuncio img {
+/*
+ * La foto va en vertical, 4:5, porque la ropa es mas alta que ancha y
+ * recortarla en cuadrado corta justo lo que se quiere ver.
+ */
+.foto-de-tarjeta {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--c-surface-2);
+}
+
+.foto-de-tarjeta img,
+.foto-vacia {
+  display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
-  border-radius: var(--r-md);
   background: var(--c-surface-2);
+}
+
+/* El distintivo de vendido o reservado se pone encima de la foto: ahi se
+ * ve de un vistazo recorriendo la rejilla, y en una linea de texto mas
+ * abajo no. */
+.sobre-la-foto {
+  position: absolute;
+  left: var(--sp-2);
+  top: var(--sp-2);
+  box-shadow: var(--sh-1);
+}
+
+.titulo-tarjeta {
+  margin-top: var(--sp-2);
+  /* Dos lineas como mucho: con tres, las tarjetas de una fila dejan de
+   * cuadrar y la rejilla parece rota. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tarjeta-anuncio:hover .titulo-tarjeta {

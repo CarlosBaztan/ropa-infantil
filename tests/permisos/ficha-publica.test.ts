@@ -11,8 +11,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   buscarAlternativas,
   buscarAnuncio,
-  urlDeFoto,
 } from "@/lib/anuncios/consulta";
+import { urlDeFoto } from "@/lib/anuncios/fotos";
 import {
   borrarUsuarioDePrueba,
   clienteAnonimo,
@@ -124,7 +124,7 @@ describe.skipIf(!HAY_BASE_DE_DATOS)("la ficha pública de un anuncio", () => {
   it("las fotos se sirven de verdad desde el almacén público", async () => {
     const anonimo = clienteAnonimo();
     const anuncio = await buscarAnuncio(anonimo, viva.id_publico);
-    const url = urlDeFoto(anonimo, anuncio!.fotos[0]!.ruta);
+    const url = urlDeFoto(anuncio!.fotos[0]!.ruta);
 
     const respuesta = await fetch(url);
     expect(respuesta.ok).toBe(true);
@@ -154,10 +154,15 @@ describe.skipIf(!HAY_BASE_DE_DATOS)("la ficha pública de un anuncio", () => {
   });
 
   it("las alternativas son de la misma talla, vivas, y sin repetir la que se mira", async () => {
+    // Con un límite amplio a propósito: la base de pruebas es una sola y
+    // otras pruebas siembran anuncios de esta misma talla a la vez. Con
+    // el límite de cuatro de la ficha, los suyos desplazaban al nuestro y
+    // esta prueba fallaba por una carrera, no por un fallo del código.
     const otras = await buscarAlternativas(
       clienteAnonimo(),
       "3-6-meses",
       vendida.id_publico,
+      50,
     );
     const codigos = otras.map((o) => o.id_publico);
     expect(codigos).toContain(viva.id_publico);

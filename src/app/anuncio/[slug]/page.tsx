@@ -4,10 +4,10 @@ import { notFound, redirect } from "next/navigation";
 import {
   buscarAlternativas,
   buscarAnuncio,
-  urlDeFoto,
   type AnuncioCompleto,
-  type ResumenDeAnuncio,
 } from "@/lib/anuncios/consulta";
+import { RejillaDeAnuncios } from "@/components/RejillaDeAnuncios";
+import { urlDeFoto } from "@/lib/anuncios/fotos";
 import { direccionDeAnuncio, idPublicoDe } from "@/lib/anuncios/direccion";
 import {
   AJUSTES_DE_TALLA,
@@ -96,7 +96,7 @@ export async function generateMetadata({
     return { title: "Anuncio no encontrado", robots: { index: false } };
   }
 
-  const { supabase, anuncio } = cargado;
+  const { anuncio } = cargado;
   const primera = anuncio.fotos[0];
   const direccion = direccionDeAnuncio(anuncio.slug, anuncio.id_publico);
 
@@ -114,7 +114,7 @@ export async function generateMetadata({
       images: primera
         ? [
             {
-              url: urlDeFoto(supabase, primera.ruta),
+              url: urlDeFoto(primera.ruta),
               width: primera.ancho,
               height: primera.alto,
             },
@@ -171,7 +171,7 @@ export default async function FichaDeAnuncio({
         // El título lo escribe una persona: se escapa el menor-que para
         // que no pueda cerrar la etiqueta y colar código.
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(datosParaBuscadores(anuncio, supabase)).replace(
+          __html: JSON.stringify(datosParaBuscadores(anuncio)).replace(
             /</g,
             "\\u003c",
           ),
@@ -193,7 +193,7 @@ export default async function FichaDeAnuncio({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={foto.ruta}
-              src={urlDeFoto(supabase, foto.ruta)}
+              src={urlDeFoto(foto.ruta)}
               alt={
                 foto.texto_alternativo ??
                 `${anuncio.titulo} — foto ${indice + 1} de ${anuncio.fotos.length}`
@@ -382,74 +382,13 @@ export default async function FichaDeAnuncio({
           <h2 style={{ fontSize: "var(--fs-xl)" }}>
             Esto ya se vendió, pero hay más de la misma talla
           </h2>
-          {alternativas.length > 0 ? (
-            <div
-              className="rejilla-anuncios"
-              style={{ marginTop: "var(--sp-4)" }}
-            >
-              {alternativas.map((otro) => (
-                <TarjetaDeAnuncio
-                  key={otro.id_publico}
-                  anuncio={otro}
-                  url={
-                    otro.fotos[0] ? urlDeFoto(supabase, otro.fotos[0].ruta) : null
-                  }
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="tarjeta" style={{ marginTop: "var(--sp-4)" }}>
-              Ahora mismo no hay nada más de esta talla. Vuelve en unos días:
-              el catálogo cambia cada semana.
-            </p>
-          )}
+          <RejillaDeAnuncios
+            anuncios={alternativas}
+            vacio="Ahora mismo no hay nada más de esta talla. Vuelve en unos días: el catálogo cambia cada semana."
+          />
         </section>
       )}
     </div>
-  );
-}
-
-function TarjetaDeAnuncio({
-  anuncio,
-  url,
-}: {
-  anuncio: ResumenDeAnuncio;
-  url: string | null;
-}) {
-  const piezas = anuncio.numero_piezas ?? 0;
-  const porPieza =
-    anuncio.tipo === "lote" && piezas > 1
-      ? precioPorPieza(anuncio.precio_centimos, piezas)
-      : null;
-
-  return (
-    <Link
-      className="tarjeta-anuncio"
-      href={direccionDeAnuncio(anuncio.slug, anuncio.id_publico)}
-    >
-      {url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt="" width={300} height={300} loading="lazy" />
-      ) : (
-        <div
-          aria-hidden="true"
-          style={{
-            aspectRatio: "1 / 1",
-            background: "var(--c-surface-2)",
-            borderRadius: "var(--r-md)",
-          }}
-        />
-      )}
-      <p className="titulo-tarjeta" style={{ marginTop: "var(--sp-2)" }}>
-        {anuncio.titulo}
-      </p>
-      <p className="precio" style={{ fontWeight: 600 }}>
-        {formatearPrecio(anuncio.precio_centimos)}
-      </p>
-      {porPieza !== null && (
-        <p className="ayuda precio">{formatearPrecio(porPieza)} la pieza</p>
-      )}
-    </Link>
   );
 }
 
@@ -458,10 +397,7 @@ function TarjetaDeAnuncio({
  * resultados como una página cualquiera; con esto sale con su precio y su
  * disponibilidad, que es la diferencia entre que lo pinchen o no.
  */
-function datosParaBuscadores(
-  anuncio: AnuncioCompleto,
-  supabase: Parameters<typeof urlDeFoto>[0],
-) {
+function datosParaBuscadores(anuncio: AnuncioCompleto) {
   const disponibilidad =
     anuncio.situacion === "vendida"
       ? "https://schema.org/SoldOut"
@@ -474,7 +410,7 @@ function datosParaBuscadores(
     "@type": "Product",
     name: anuncio.titulo,
     description: resumen(anuncio),
-    image: anuncio.fotos.map((foto) => urlDeFoto(supabase, foto.ruta)),
+    image: anuncio.fotos.map((foto) => urlDeFoto(foto.ruta)),
     category: etiquetaDe(CATEGORIAS, anuncio.categoria) ?? undefined,
     brand: anuncio.marca ? { "@type": "Brand", name: anuncio.marca } : undefined,
     size: tallaPorCodigo(anuncio.talla)?.etiqueta,

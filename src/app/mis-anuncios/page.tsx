@@ -3,9 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   buscarMisAnuncios,
-  urlDeFoto,
   type AnuncioPropio,
 } from "@/lib/anuncios/consulta";
+import { urlDeFoto } from "@/lib/anuncios/fotos";
 import { direccionDeAnuncio } from "@/lib/anuncios/direccion";
 import { formatearPrecio, precioPorPieza } from "@/lib/anuncios/precio";
 import { clienteServidor } from "@/lib/supabase/servidor";
@@ -98,19 +98,16 @@ export default async function MisAnuncios({
       <Grupo
         titulo="En venta"
         anuncios={enVenta}
-        supabase={supabase}
         vacio="Nada en venta ahora mismo."
       />
       <Grupo
         titulo="Vendidos"
         anuncios={vendidos}
-        supabase={supabase}
         vacio={null}
       />
       <Grupo
         titulo="Retirados"
         anuncios={retirados}
-        supabase={supabase}
         vacio={null}
       />
     </div>
@@ -120,12 +117,10 @@ export default async function MisAnuncios({
 function Grupo({
   titulo,
   anuncios,
-  supabase,
   vacio,
 }: {
   titulo: string;
   anuncios: AnuncioPropio[];
-  supabase: Parameters<typeof urlDeFoto>[0];
   vacio: string | null;
 }) {
   if (anuncios.length === 0 && vacio === null) return null;
@@ -147,7 +142,7 @@ function Grupo({
         >
           {anuncios.map((anuncio) => (
             <li key={anuncio.id}>
-              <FilaDeAnuncio anuncio={anuncio} supabase={supabase} />
+              <FilaDeAnuncio anuncio={anuncio} />
             </li>
           ))}
         </ul>
@@ -158,10 +153,8 @@ function Grupo({
 
 function FilaDeAnuncio({
   anuncio,
-  supabase,
 }: {
   anuncio: AnuncioPropio;
-  supabase: Parameters<typeof urlDeFoto>[0];
 }) {
   const primera = anuncio.fotos[0];
   const piezas = anuncio.numero_piezas ?? 0;
@@ -182,7 +175,7 @@ function FilaDeAnuncio({
         {primera ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={urlDeFoto(supabase, primera.ruta)}
+            src={urlDeFoto(primera.ruta)}
             alt=""
             width={96}
             height={96}
