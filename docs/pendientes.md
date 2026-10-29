@@ -43,21 +43,10 @@ más bloquea.
 
 ## Las migraciones que faltan
 
-Dos cosas distintas, y conviene hacerlas en este orden.
-
-**1. La 0011 en PRUEBAS.** Es la única migración escrita que no se ha
-ejecutado todavía en ningún sitio: me quedé sin poder llegar al panel al
-final de la sesión. Hace que cada perfil nazca con un alias puesto
-(`familia-a1b2c3`), porque ahora mismo se puede publicar un anuncio sin
-tener ninguno y la ficha se queda sin forma de nombrar a quien vende.
-Pégala sola en el editor SQL del proyecto **de pruebas** y dime que está:
-hay que ejecutarla ahí y pasar las pruebas antes de que toque producción.
-Una migración no debería estrenarse en producción.
-
-**2. De la 0008 a la 0011 en PRODUCCIÓN.** Allí la base se quedó en la
-0007, así que todavía no existen los anuncios y publicar en la web
-desplegada da error. Hay que aplicar, en este orden, en el proyecto
-`ropa-infantil-produccion`:
+La base de pruebas va por la 0011 y todas están comprobadas allí. La de
+producción se quedó en la 0007, así que todavía no existen los anuncios y
+publicar en la web desplegada da error. Hay que aplicar, en este orden, en
+el proyecto `ropa-infantil-produccion`:
 
       0008_anuncios.sql
       0009_fotos.sql
