@@ -11,13 +11,17 @@
 #   .\scripts\preparar-sql.ps1              -> todas las migraciones y la semilla
 #   .\scripts\preparar-sql.ps1 -Reinicio    -> además, borra antes lo que haya
 #   .\scripts\preparar-sql.ps1 -Solo 0011   -> solo esa migración
+#   .\scripts\preparar-sql.ps1 -Desde 0008  -> esa y todas las siguientes
 #
 # -Solo es lo normal cuando la base ya está montada: aplicar la migración
-# nueva y nada más. Rehacerlo todo solo tiene sentido en una base vacía.
+# nueva y nada más. -Desde sirve para poner al día una base que se quedó
+# atrás, que es el caso de producción. Rehacerlo todo solo tiene sentido
+# en una base vacía.
 #
-# Después: pegar en el editor SQL del proyecto de PRUEBAS y ejecutar.
+# Después: pegar en el editor SQL del proyecto que toque y ejecutar.
+# Comprueba el nombre del proyecto arriba del panel antes de darle a Run.
 
-param([switch]$Reinicio, [string]$Solo)
+param([switch]$Reinicio, [string]$Solo, [string]$Desde)
 
 $ErrorActionPreference = "Stop"
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -62,6 +66,18 @@ if ($Solo) {
     }
     $sql += (Leer-EnUtf8 $elegidas[0].FullName) + "`r`ncommit;`r`n"
     Write-Output "Solo: $($elegidas[0].Name)"
+} elseif ($Desde) {
+    $todas = @(Get-ChildItem "$raiz\supabase\migrations\*.sql" | Sort-Object Name)
+    $primera = [array]::FindIndex($todas, [Predicate[object]]{ param($f) $f.Name -like "*$Desde*" })
+    if ($primera -lt 0) {
+        throw "No hay ninguna migracion que case con '$Desde'."
+    }
+    $elegidas = $todas[$primera..($todas.Count - 1)]
+    foreach ($archivo in $elegidas) {
+        $sql += (Leer-EnUtf8 $archivo.FullName) + "`r`n`r`n"
+    }
+    $sql += "commit;`r`n"
+    Write-Output "Desde la $Desde : $($elegidas.Name -join ', ')"
 } else {
     Get-ChildItem "$raiz\supabase\migrations\*.sql" | Sort-Object Name | ForEach-Object {
         $sql += (Leer-EnUtf8 $_.FullName) + "`r`n`r`n"
@@ -88,9 +104,10 @@ $centinelas = @(
     "Pol${iAcc}tica de privacidad"
 )
 
-# Las frases concretas solo estan cuando va todo junto. Con -Solo queda el
-# vigilante de abajo, que busca el sintoma y no una frase en particular.
-if (-not $Solo) {
+# Las frases concretas solo estan cuando va todo junto. Con -Solo o -Desde
+# queda el vigilante de abajo, que busca el sintoma de la corrupcion y no
+# una frase en particular.
+if (-not $Solo -and -not $Desde) {
     foreach ($control in $centinelas) {
         if ($sql -notlike "*$control*") {
             throw "No encuentro '$control' intacto: el texto se ha corrompido."
