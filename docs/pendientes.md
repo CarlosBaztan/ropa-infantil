@@ -22,9 +22,38 @@ más bloquea.
       en una conversación de chat el 21/10/2026, así que ha quedado en un
       historial. Se cambia en Supabase → Project Settings → Database →
       Reset database password.
-- [ ] **Borrar la carpeta vieja** `C:\Users\carlos3\OneDrive\Escritorio\APP mami`.
-      Todavía contiene un `.env.local` con la clave secreta del proyecto de
-      pruebas. Bórrala entera, no la vacíes.
+- [ ] **Aplicar la migración 0010 a producción.** Cierra un agujero real:
+      los permisos por columna no estaban restringiendo nada, porque
+      Supabase concede todo por omisión sobre cada tabla nueva y nuestros
+      `grant` solo añadían. Desde el navegador se podía falsear la fecha de
+      venta de un anuncio propio, o su fecha de publicación para dejarlo
+      siempre arriba. **Ya está aplicada en pruebas y comprobada**; en
+      producción no, porque allí todavía no están ni la 0008 ni la 0009.
+      Van las tres juntas, en orden. Ver «Las migraciones que faltan».
+- [ ] **Decidir si el repositorio debe ser público.** Lo creé privado y lo
+      verifiqué en su momento; ahora está público. He vuelto a repasar todo
+      el historial y no hay ninguna credencial, ningún valor de `.env` ni
+      la contraseña que escribiste en el chat: el único archivo de entorno
+      versionado es la plantilla vacía. O sea que daño no hay; es una
+      decisión tuya, no una urgencia.
+- [ ] Borrar la carpeta vacía `C:\Users\carlos3\Proyectos\ropa-infantil`,
+      que quedó de cuando el proyecto estuvo fuera de OneDrive. Está vacía:
+      no hay nada dentro, ni claves ni código. **No borres
+      `OneDrive\Escritorio\APP mami`: ahí vive el proyecto.**
+
+## Las migraciones que faltan en producción
+
+La base de pruebas va por la 0010. La de producción se quedó en la 0007,
+así que allí todavía no existen los anuncios. Hay que aplicar, **en este
+orden y en el proyecto `ropa-infantil-produccion`**:
+
+      0008_anuncios.sql
+      0009_fotos.sql
+      0010_cerrar_los_permisos_de_columna.sql
+
+Con `.\scripts\preparar-sql.ps1` se copia todo junto al portapapeles; se
+pega en el editor SQL del panel de Supabase y se ejecuta. Hasta que estén,
+publicar en la web desplegada da error.
 
 ## Para que el proyecto avance
 
