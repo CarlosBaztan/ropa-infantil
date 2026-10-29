@@ -53,8 +53,26 @@ el proyecto `ropa-infantil-produccion`:
       0010_cerrar_los_permisos_de_columna.sql
       0011_todo_el_mundo_tiene_alias.sql
 
-Con `.\scripts\preparar-sql.ps1` se copian todas juntas al portapapeles;
-se pegan en el editor SQL del panel de Supabase y se ejecutan.
+Las cuatro se copian juntas, en orden y en una sola transacción —si algo
+falla no se aplica nada— con:
+
+      .\scripts\preparar-sql.ps1 -Desde 0008
+
+Y se pegan aquí, que es el editor SQL de producción:
+
+      https://supabase.com/dashboard/project/mvdnoxdkychfgsyqkhrb/sql/new
+
+Comprueba que arriba del panel pone **ropa-infantil-produccion** antes de
+darle a Run. Tiene que contestar «Success. No rows returned».
+
+Yo las dejé pegadas y listas, pero el último paso —darle a Run sobre
+producción— no me deja darlo el sistema de seguridad, y me parece bien:
+una migración en producción no es una acción que deba ejecutar sola.
+
+Después, esta consulta tiene que devolver ocho tablas (hoy devuelve cinco):
+
+      select table_name from information_schema.tables
+       where table_schema = 'public' order by table_name;
 
 ## Para que el proyecto avance
 
