@@ -543,3 +543,40 @@ label:has(> input[type="radio"]) {
 .acciones-anuncio summary::-webkit-details-marker {
   display: none;
 }
+
+/* --- La barra de arriba --- */
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface);
+}
+
+.cabecera .marca {
+  color: var(--c-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cabecera .marca:hover {
+  text-decoration: underline;
+}
+
+.menu {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+}
+
+/* Los enlaces del menu son zona tactil, no texto suelto: se pulsan con el
+ * pulgar y con un bebe en el otro brazo. */
+.menu a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}

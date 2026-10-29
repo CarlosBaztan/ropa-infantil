@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Cabecera } from "@/components/Cabecera";
 import { PieLegal } from "@/components/PieLegal";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function DisposicionRaiz({
         <a href="#contenido" className="salto-contenido">
           Ir al contenido
         </a>
+        <Cabecera />
         <main id="contenido" style={{ scrollMarginTop: "var(--sp-4)" }}>
           {children}
         </main>

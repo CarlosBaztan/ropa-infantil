@@ -224,6 +224,10 @@ export default async function Perfil({
       </form>
 
       <div style={{ marginTop: "var(--sp-10)" }}>
+        <p>
+          <Link href="/mis-anuncios">Tus anuncios</Link>
+        </p>
+
         {perfil.alias ? (
           <p>
             Tu armario público:{" "}
