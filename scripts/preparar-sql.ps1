@@ -10,10 +10,14 @@
 #
 #   .\scripts\preparar-sql.ps1              -> todas las migraciones y la semilla
 #   .\scripts\preparar-sql.ps1 -Reinicio    -> además, borra antes lo que haya
+#   .\scripts\preparar-sql.ps1 -Solo 0011   -> solo esa migración
+#
+# -Solo es lo normal cuando la base ya está montada: aplicar la migración
+# nueva y nada más. Rehacerlo todo solo tiene sentido en una base vacía.
 #
 # Después: pegar en el editor SQL del proyecto de PRUEBAS y ejecutar.
 
-param([switch]$Reinicio)
+param([switch]$Reinicio, [string]$Solo)
 
 $ErrorActionPreference = "Stop"
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -48,10 +52,22 @@ function Leer-EnUtf8($ruta) {
 
 $sql = if ($Reinicio) { $sqlDeReinicio } else { "begin;`r`n`r`n" }
 
-Get-ChildItem "$raiz\supabase\migrations\*.sql" | Sort-Object Name | ForEach-Object {
-    $sql += (Leer-EnUtf8 $_.FullName) + "`r`n`r`n"
+if ($Solo) {
+    $elegidas = @(Get-ChildItem "$raiz\supabase\migrations\*$Solo*.sql")
+    if ($elegidas.Count -eq 0) {
+        throw "No hay ninguna migracion que case con '$Solo'."
+    }
+    if ($elegidas.Count -gt 1) {
+        throw "'$Solo' casa con varias: $($elegidas.Name -join ', '). Concreta mas."
+    }
+    $sql += (Leer-EnUtf8 $elegidas[0].FullName) + "`r`ncommit;`r`n"
+    Write-Output "Solo: $($elegidas[0].Name)"
+} else {
+    Get-ChildItem "$raiz\supabase\migrations\*.sql" | Sort-Object Name | ForEach-Object {
+        $sql += (Leer-EnUtf8 $_.FullName) + "`r`n`r`n"
+    }
+    $sql += (Leer-EnUtf8 "$raiz\supabase\seed\tallas.sql") + "`r`ncommit;`r`n"
 }
-$sql += (Leer-EnUtf8 "$raiz\supabase\seed\tallas.sql") + "`r`ncommit;`r`n"
 
 # Centinelas: si estos acentos no sobreviven, algo ha corrompido el texto.
 #
@@ -72,9 +88,13 @@ $centinelas = @(
     "Pol${iAcc}tica de privacidad"
 )
 
-foreach ($control in $centinelas) {
-    if ($sql -notlike "*$control*") {
-        throw "No encuentro '$control' intacto: el texto se ha corrompido."
+# Las frases concretas solo estan cuando va todo junto. Con -Solo queda el
+# vigilante de abajo, que busca el sintoma y no una frase en particular.
+if (-not $Solo) {
+    foreach ($control in $centinelas) {
+        if ($sql -notlike "*$control*") {
+            throw "No encuentro '$control' intacto: el texto se ha corrompido."
+        }
     }
 }
 if ($sql -like "*$aTil*") {
