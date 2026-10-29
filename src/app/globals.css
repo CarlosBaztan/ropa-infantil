@@ -508,3 +508,38 @@ label:has(> input[type="radio"]) {
 .tarjeta-anuncio:hover .titulo-tarjeta {
   text-decoration: underline;
 }
+
+/* --- La lista de «Mis anuncios» --- */
+
+.fila-anuncio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/*
+ * Los botones se envuelven en vez de apretarse: en un movil estrecho
+ * prefiero dos filas de botones que se pueden pulsar a una fila de
+ * botones que no.
+ */
+.acciones-anuncio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: flex-start;
+}
+
+/* Cada confirmación ocupa toda la fila cuando se abre, para que el texto
+ * se lea antes de pulsar. */
+.acciones-anuncio details[open] {
+  flex: 1 0 100%;
+}
+
+.acciones-anuncio summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.acciones-anuncio summary::-webkit-details-marker {
+  display: none;
+}
