@@ -10,8 +10,9 @@ import { usePathname } from "next/navigation";
  * motor del catálogo: sin gente publicando no hay nada que enseñar, y en
  * un móvil el pulgar llega abajo mucho mejor que arriba.
  *
- * Cuatro destinos y no cinco: los mensajes son del plan siguiente, y un
- * botón que no lleva a ninguna parte es peor que no tenerlo.
+ * Los cinco destinos de la especificación. Si los mensajes todavía no
+ * están disponibles, su pantalla lo dice con todas las letras en vez de
+ * enseñar una bandeja vacía que haría pensar que nadie ha escrito.
  *
  * Es de cliente solo para saber en qué página estamos y decirlo con
  * aria-current, que es lo que permite a un lector de pantalla situar a
@@ -29,6 +30,7 @@ const DESTINOS: readonly Destino[] = [
   { href: "/", texto: "Inicio", icono: "casa" },
   { href: "/buscar", texto: "Buscar", icono: "lupa" },
   { href: "/publicar", texto: "Publicar", icono: "mas", destacado: true },
+  { href: "/mensajes", texto: "Mensajes", icono: "sobre" },
   { href: "/perfil", texto: "Cuenta", icono: "persona" },
 ];
 
@@ -58,6 +60,14 @@ function Icono({ nombre }: { nombre: string }) {
       <svg {...comun}>
         <circle cx="11" cy="11" r="7" />
         <path d="m20 20-3.5-3.5" />
+      </svg>
+    );
+  }
+  if (nombre === "sobre") {
+    return (
+      <svg {...comun}>
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3 7 9 6 9-6" />
       </svg>
     );
   }

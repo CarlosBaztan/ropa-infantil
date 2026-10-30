@@ -925,3 +925,59 @@ html {
 .mas-filtros[open] > summary::after {
   content: "▴";
 }
+
+/* --- Los mensajes --- */
+
+.fila-conversacion {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: flex-start;
+  color: inherit;
+  text-decoration: none;
+}
+
+.fila-conversacion img,
+.foto-de-hilo {
+  width: 4rem;
+  height: 4rem;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  background: var(--c-surface-2);
+}
+
+a.fila-conversacion:hover {
+  background: var(--c-surface-2);
+}
+
+.hilo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+  list-style: none;
+}
+
+/*
+ * Lo tuyo a la derecha y lo de la otra parte a la izquierda, que es lo
+ * que todo el mundo espera. Pero no solo por el lado: cada mensaje dice
+ * debajo quien lo escribio, porque la posicion no la percibe quien no ve
+ * la pantalla y a quien ve poco se le escapa.
+ */
+.mensaje {
+  max-width: 85%;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+}
+
+.mensaje.mio {
+  align-self: flex-end;
+  background: var(--c-primary-soft);
+  border-color: var(--c-primary-soft);
+}
+
+.mensaje p:first-child {
+  white-space: pre-line;
+}

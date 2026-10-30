@@ -7,6 +7,8 @@ import {
   type AnuncioCompleto,
 } from "@/lib/anuncios/consulta";
 import { RejillaDeAnuncios } from "@/components/RejillaDeAnuncios";
+import { conversacionSobre } from "@/lib/mensajes/consulta";
+import { preguntar } from "@/app/mensajes/acciones";
 import { urlDeFoto } from "@/lib/anuncios/fotos";
 import { direccionDeAnuncio, idPublicoDe } from "@/lib/anuncios/direccion";
 import {
@@ -126,10 +128,13 @@ export async function generateMetadata({
 
 export default async function FichaDeAnuncio({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { slug } = await params;
+  const { error } = await searchParams;
   const cargado = await cargar(slug);
   if (!cargado) notFound();
 
@@ -144,6 +149,17 @@ export default async function FichaDeAnuncio({
   const piezas = anuncio.numero_piezas ?? 0;
   const porPieza =
     esLote && piezas > 1 ? precioPorPieza(anuncio.precio_centimos, piezas) : null;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const esMio = user?.id === anuncio.vendedor;
+  // Si ya hay conversación abierta sobre este anuncio se lleva a ella:
+  // abrir un hilo nuevo sobre algo de lo que ya se está hablando
+  // confunde a las dos partes.
+  const yaHablamos = user && !esMio
+    ? await conversacionSobre(supabase, anuncio.id)
+    : null;
 
   const alternativas =
     anuncio.situacion === "vendida"
@@ -177,6 +193,15 @@ export default async function FichaDeAnuncio({
           ),
         }}
       />
+
+      {/* Si preguntar ha fallado se vuelve aquí: sin esto, se pulsa
+        * «Enviar la pregunta», la página se recarga igual y no pasa nada
+        * visible, que es la peor forma de fallar. */}
+      {error && (
+        <p role="alert" className="aviso-error" style={{ marginBottom: "var(--sp-5)" }}>
+          <span>{error}</span>
+        </p>
+      )}
 
       {anuncio.situacion === "retirada" && (
         <p className="aviso-error" style={{ marginBottom: "var(--sp-5)" }}>
@@ -370,11 +395,49 @@ export default async function FichaDeAnuncio({
           )}
           {lugar ? ` · ${lugar}` : ""}
         </p>
-        <p className="ayuda" style={{ marginTop: "var(--sp-3)" }}>
-          Los mensajes entre quien compra y quien vende llegan en la
-          siguiente fase. Hasta entonces esta ficha sirve para enseñar lo
-          que hay.
-        </p>
+        {esMio ? (
+          <p className="ayuda" style={{ marginTop: "var(--sp-3)" }}>
+            Este anuncio es tuyo. Las preguntas te llegan a{" "}
+            <Link href="/mensajes">tus mensajes</Link>.
+          </p>
+        ) : yaHablamos ? (
+          <p style={{ marginTop: "var(--sp-4)" }}>
+            <Link className="boton" href={`/mensajes/${yaHablamos}`}>
+              Seguir la conversación
+            </Link>
+          </p>
+        ) : anuncio.situacion === "vendida" ? (
+          <p className="ayuda" style={{ marginTop: "var(--sp-3)" }}>
+            Esto ya está vendido, así que no se puede preguntar por ello.
+          </p>
+        ) : (
+          /*
+           * La caja de preguntar va aquí, con el texto ya escrito, y no
+           * detrás de un botón que lleva a otra pantalla: cada pantalla
+           * de por medio es gente que no pregunta. Si no hay sesión, la
+           * acción lleva a entrar y se vuelve.
+           */
+          <form action={preguntar} className="pila" style={{ marginTop: "var(--sp-4)" }}>
+            <input type="hidden" name="anuncio" value={anuncio.id} />
+            <input type="hidden" name="vuelta" value={direccion} />
+            <div className="campo">
+              <label htmlFor="pregunta">Pregúntale</label>
+              <textarea
+                id="pregunta"
+                name="texto"
+                rows={3}
+                maxLength={2000}
+                required
+                defaultValue="Hola, ¿sigue disponible?"
+              />
+            </div>
+            <div>
+              <button className="boton" type="submit">
+                Enviar la pregunta
+              </button>
+            </div>
+          </form>
+        )}
       </section>
 
       {anuncio.situacion === "vendida" && (
