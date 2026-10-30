@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { BarraDeAbajo } from "@/components/BarraDeAbajo";
 import { Cabecera } from "@/components/Cabecera";
 import { PieLegal } from "@/components/PieLegal";
+import { sitio } from "@/lib/sitio";
 import "./globals.css";
 
 /*
@@ -13,6 +14,13 @@ import "./globals.css";
  */
 
 export const metadata: Metadata = {
+  /*
+   * Hace falta para que las direcciones de las imágenes de compartir y
+   * las canónicas salgan enteras. Sin esto, Next las escribe relativas
+   * y WhatsApp no sabe de dónde bajarse la imagen: el enlace se comparte
+   * pelado, sin nada que mirar.
+   */
+  metadataBase: new URL(sitio()),
   title: "Ropa de bebé y niño de segunda mano entre familias",
   description:
     "Compra y vende lotes de ropa infantil por talla y temporada. Entrega en mano sin gastos de envío.",
