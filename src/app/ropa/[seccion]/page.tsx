@@ -15,11 +15,16 @@ import { CATEGORIAS, etiquetaDe } from "@/lib/anuncios/modelo";
  *
  * La ruta /ropa/talla/… gana a esta aunque las dos empiecen igual: en
  * Next, un tramo escrito a mano pesa más que uno con corchetes.
+ *
+ * El tramo se llama «seccion» y no «categoria» porque Next exige que un
+ * mismo sitio de la ruta tenga el mismo nombre en todas las rutas que
+ * pasan por él, y debajo cuelga /ropa/<genero>/<lo que sea>. Si no
+ * coinciden, el servidor no arranca.
  */
 
 export const revalidate = 300;
 
-type Parametros = Promise<{ categoria: string }>;
+type Parametros = Promise<{ seccion: string }>;
 type Busqueda = Promise<{ pagina?: string }>;
 
 export async function generateMetadata({
@@ -29,7 +34,7 @@ export async function generateMetadata({
   params: Parametros;
   searchParams: Busqueda;
 }): Promise<Metadata> {
-  const { categoria } = await params;
+  const { seccion: categoria } = await params;
   const etiqueta = etiquetaDe(CATEGORIAS, categoria);
   if (!etiqueta) return { title: "No encontrado", robots: { index: false } };
 
@@ -52,7 +57,7 @@ export default async function PorCategoria({
   params: Parametros;
   searchParams: Busqueda;
 }) {
-  const { categoria } = await params;
+  const { seccion: categoria } = await params;
   const etiqueta = etiquetaDe(CATEGORIAS, categoria);
   // Una categoría inventada es un 404, igual que una talla inventada.
   if (!etiqueta) notFound();

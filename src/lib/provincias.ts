@@ -72,6 +72,11 @@ export function provinciaPorCodigo(codigo: string): Provincia | null {
   return PROVINCIAS.find((p) => p.codigo === codigo) ?? null;
 }
 
+/** La provincia de una direccion como /ropa-segunda-mano/alicante. */
+export function provinciaPorSlug(slug: string): Provincia | null {
+  return PROVINCIAS.find((p) => p.slug === slug.toLowerCase()) ?? null;
+}
+
 export function esCodigoDeProvincia(codigo: string): boolean {
   return PROVINCIAS.some((p) => p.codigo === codigo);
 }

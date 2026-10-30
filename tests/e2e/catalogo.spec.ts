@@ -153,6 +153,47 @@ test.describe("el catálogo", () => {
     ).toHaveCount(0);
   });
 
+  test("las páginas de género funcionan, con talla y con categoría", async ({
+    page,
+  }) => {
+    /*
+     * Esta prueba existe por un fallo que la compilación no vio. Next
+     * exige que un mismo sitio de la ruta se llame igual en todas las
+     * rutas que pasan por él, y /ropa/<categoria> y /ropa/<genero>/<algo>
+     * tenían nombres distintos. Compilaba perfectamente y luego el
+     * servidor devolvía 500 en TODAS las páginas, no solo en esas.
+     */
+    for (const direccion of ["/ropa/nina/3-6-meses", "/ropa/nina/vestidos"]) {
+      const respuesta = await page.goto(direccion);
+      expect(respuesta?.status(), direccion).toBe(200);
+    }
+
+    await page.goto("/ropa/nina/4-meses");
+    await expect(page).toHaveURL("/ropa/nina/3-6-meses");
+
+    for (const direccion of ["/ropa/nina/inventado", "/ropa/perro/vestidos"]) {
+      const respuesta = await page.goto(direccion);
+      expect(respuesta?.status(), direccion).toBe(404);
+    }
+  });
+
+  test("la página de una provincia ordena pero no esconde el resto", async ({
+    page,
+  }) => {
+    await page.goto("/ropa-segunda-mano/madrid");
+    await expect(
+      page.getByRole("heading", {
+        name: "Ropa infantil de segunda mano en Madrid",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: new RegExp(palabra) }).first(),
+    ).toBeVisible();
+
+    const respuesta = await page.goto("/ropa-segunda-mano/inventada");
+    expect(respuesta?.status()).toBe(404);
+  });
+
   test("el buscador encuentra por texto", async ({ page }) => {
     await page.goto(`/buscar?texto=${palabra}`);
     await expect(
