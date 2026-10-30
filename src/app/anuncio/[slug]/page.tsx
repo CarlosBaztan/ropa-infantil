@@ -12,6 +12,10 @@ import { preguntar } from "@/app/mensajes/acciones";
 import { urlDeFoto } from "@/lib/anuncios/fotos";
 import { direccionDeAnuncio, idPublicoDe } from "@/lib/anuncios/direccion";
 import {
+  direccionDeLotesPorTalla,
+  direccionDeTalla,
+} from "@/lib/anuncios/direcciones-seo";
+import {
   AJUSTES_DE_TALLA,
   CATEGORIAS,
   ESTADOS_DE_CONSERVACION,
@@ -22,7 +26,7 @@ import {
 import { formatearPrecio, precioPorPieza } from "@/lib/anuncios/precio";
 import { provinciaPorCodigo } from "@/lib/provincias";
 import { clienteServidor } from "@/lib/supabase/servidor";
-import { tallaPorCodigo } from "@/lib/tallas";
+import { tallaPorCodigo, tallaSiguiente } from "@/lib/tallas";
 
 /*
  * La ficha pública de un anuncio.
@@ -145,6 +149,10 @@ export default async function FichaDeAnuncio({
   const direccion = direccionDeAnuncio(anuncio.slug, anuncio.id_publico);
   if (direccion !== `/anuncio/${slug}`) redirect(direccion);
 
+  // De un lote, la talla siguiente es la que viene detrás de la última
+  // del rango, no detrás de la primera.
+  const laSiguiente = tallaSiguiente(anuncio.talla_hasta ?? anuncio.talla);
+
   const esLote = anuncio.tipo === "lote";
   const piezas = anuncio.numero_piezas ?? 0;
   const porPieza =
@@ -250,7 +258,36 @@ export default async function FichaDeAnuncio({
         {anuncio.situacion === "reservada" && (
           <span className="distintivo">Reservado</span>
         )}
-        {anuncio.situacion === "vendida" && (
+        {/*
+        * El gancho del nicho, y la razón de que esto pueda ser un negocio
+        * y no una web: la ropa infantil se compra otra vez dentro de tres
+        * o cuatro meses, cuando la talla se queda pequeña. Quien llega
+        * aquí desde Google se va con dos sitios más a los que volver.
+        */}
+      <section style={{ marginTop: "var(--sp-8)" }}>
+        <h2 style={{ fontSize: "var(--fs-lg)" }}>Sigue mirando</h2>
+        <nav aria-label="Más de esta talla" className="atajos">
+          <Link className="atajo" href={direccionDeTalla(anuncio.talla)}>
+            Todo de la talla {tallaPorCodigo(anuncio.talla)?.etiqueta}
+          </Link>
+          <Link className="atajo" href={direccionDeLotesPorTalla(anuncio.talla)}>
+            Lotes de esta talla
+          </Link>
+          {laSiguiente && (
+            <Link className="atajo" href={direccionDeTalla(laSiguiente.codigo)}>
+              La talla siguiente ({laSiguiente.etiqueta})
+            </Link>
+          )}
+        </nav>
+        {laSiguiente && (
+          <p className="ayuda" style={{ marginTop: "var(--sp-3)" }}>
+            Dentro de unos meses le vendrá la {laSiguiente.etiqueta}. Mirarla
+            ahora sale más barato que buscarla con prisa.
+          </p>
+        )}
+      </section>
+
+      {anuncio.situacion === "vendida" && (
           <span className="distintivo distintivo-vendida">Vendido</span>
         )}
       </div>

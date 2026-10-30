@@ -981,3 +981,44 @@ a.fila-conversacion:hover {
 .mensaje p:first-child {
   white-space: pre-line;
 }
+
+/* --- El hueco mientras carga --- */
+
+.tarjeta-fantasma {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.foto-fantasma {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--r-md);
+}
+
+.linea-fantasma {
+  height: 1rem;
+  border-radius: var(--r-sm);
+}
+
+.linea-fantasma.corta {
+  width: 50%;
+}
+
+.foto-fantasma,
+.linea-fantasma {
+  background: var(--c-surface-2);
+  /* El latido dice que esto va a llegar, no que se ha quedado colgado.
+   * Con movimiento reducido se queda quieto: la regla general de
+   * prefers-reduced-motion ya lo apaga. */
+  animation: latido 1.4s var(--easing) infinite;
+}
+
+@keyframes latido {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
