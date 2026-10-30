@@ -60,6 +60,12 @@ delicada del proyecto: un anuncio mal protegido deja que alguien cambie
 un precio, pero una conversación mal protegida deja que un desconocido
 lea dónde y a qué hora ha quedado una madre con otra.
 
+**Las pantallas de mensajes ya están hechas y esperando esa migración.**
+Mientras no esté, la bandeja dice que los mensajes están a punto de
+entrar en funcionamiento y preguntar desde un anuncio avisa de que
+todavía no se puede, en vez de dar un error. Está comprobado que se
+comporta así, pero nadie ha podido enviar un mensaje de verdad.
+
 ### En PRODUCCIÓN: de la 0008 en adelante
 
 Allí la base se quedó en la 0007, así que todavía no existen los anuncios

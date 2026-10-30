@@ -101,11 +101,16 @@ Hito 1, tramo A. Funcionan de punta a punta:
 - **Catálogo**: portada, `/lotes`, páginas por talla, categoría, género,
   marca y provincia, buscador, mapa del sitio con umbral y `robots.txt`.
 
-Lo que falta para que alguien pueda comprar de verdad es **la mensajería**:
-hoy se puede publicar y se puede encontrar, pero no se puede preguntar «¿te
-queda?». Su migración está escrita (`0012`) y sus pruebas también; falta
-aplicarla. Después llegan el perfil del niño con el aviso de talla
-siguiente, la siembra asistida y el panel.
+- **Mensajes**: bandeja, conversación atada a su anuncio, respuestas de un
+  toque y la caja de preguntar en la propia ficha. **Las pantallas están y
+  la migración `0012` no**, así que de momento dicen que los mensajes están
+  a punto de entrar en funcionamiento en vez de fallar.
+
+Lo que falta para que alguien pueda comprar de verdad es **aplicar esa
+migración** y, después, el aviso por correo cuando alguien te escribe —que
+depende de tener dominio y servicio de correo—. Más adelante llegan el
+perfil del niño con el aviso de talla siguiente, la siembra asistida y el
+panel.
 
 Lo que está pendiente de una persona, y no de código, está en
 [`docs/pendientes.md`](docs/pendientes.md).
