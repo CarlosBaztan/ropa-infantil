@@ -22,6 +22,16 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  /*
+   * El color de la barra del móvil, que se pinta del mismo color que la
+   * página en vez de quedarse blanca encima de un fondo oscuro. Van los
+   * dos modos porque el sistema visual también los tiene: con uno solo,
+   * la mitad de la gente ve una franja que no pega con nada.
+   */
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fffcf8" },
+    { media: "(prefers-color-scheme: dark)", color: "#10161a" },
+  ],
 };
 
 export default function DisposicionRaiz({
