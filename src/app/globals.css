@@ -1022,3 +1022,35 @@ a.fila-conversacion:hover {
     opacity: 0.55;
   }
 }
+
+/* Las miniaturas de las fotos al publicar */
+
+.miniaturas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  list-style: none;
+}
+
+.miniaturas > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  width: 6rem;
+}
+
+.miniaturas img {
+  width: 6rem;
+  height: 7.5rem;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+
+/* El boton ocupa el ancho de su miniatura: asi caben tres por fila en
+ * un movil estrecho y sigue siendo zona tactil. */
+.miniaturas .boton {
+  width: 100%;
+  min-width: 0;
+  padding: 0 var(--sp-2);
+}

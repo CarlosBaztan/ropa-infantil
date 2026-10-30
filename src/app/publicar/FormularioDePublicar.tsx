@@ -307,14 +307,15 @@ export function FormularioDePublicar(props: Props) {
 
           {preparando ? <p aria-live="polite">Preparando las fotos…</p> : null}
 
-          <ul
-            style={{
-              display: "flex",
-              gap: "var(--sp-3)",
-              flexWrap: "wrap",
-              listStyle: "none",
-            }}
-          >
+          {/*
+            * Las miniaturas, en columna cada una con su boton debajo. La
+            * primera version ponia el boton al lado y cada foto ocupaba
+            * una fila entera: con cinco, la pantalla se llenaba de
+            * vistas previas y el boton de seguir quedaba a dos pantallas
+            * de distancia, en el paso donde mas importa no perder a
+            * nadie.
+            */}
+          <ul className="miniaturas" role="list">
             {fotos.map((foto, i) => (
               <li key={foto.vistaPrevia}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -322,12 +323,12 @@ export function FormularioDePublicar(props: Props) {
                   src={foto.vistaPrevia}
                   alt={`Foto ${i + 1} de ${fotos.length}`}
                   width={96}
-                  height={128}
-                  style={{ objectFit: "cover", borderRadius: "var(--r-sm)" }}
+                  height={120}
                 />
                 <button
                   type="button"
                   className="boton boton-secundario"
+                  aria-label={`Quitar la foto ${i + 1}`}
                   onClick={() =>
                     setFotos((p) => p.filter((_, j) => j !== i))
                   }
