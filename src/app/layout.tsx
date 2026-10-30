@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { BarraDeAbajo } from "@/components/BarraDeAbajo";
 import { Cabecera } from "@/components/Cabecera";
 import { PieLegal } from "@/components/PieLegal";
 import "./globals.css";
@@ -38,6 +39,7 @@ export default function DisposicionRaiz({
           {children}
         </main>
         <PieLegal />
+        <BarraDeAbajo />
       </body>
     </html>
   );
