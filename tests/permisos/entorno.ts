@@ -116,3 +116,22 @@ export async function intentarAcceso(correo: string): Promise<string | null> {
   });
   return error ? error.message : null;
 }
+
+/**
+ * Si una tabla ya existe en la base de pruebas.
+ *
+ * Sirve para que las pruebas de una migracion que todavia no se ha
+ * aplicado se salten en vez de fallar en rojo. No es una comodidad: una
+ * migracion la aplica una persona a mano en el panel de Supabase, y
+ * entre que el codigo se escribe y alguien la pega pueden pasar dias.
+ * Lo que NO puede pasar es que la prueba se quede saltada para siempre,
+ * asi que cada una de estas esta anotada en docs/pendientes.md.
+ */
+export async function existeLaTabla(nombre: string): Promise<boolean> {
+  if (!HAY_BASE_DE_DATOS) return false;
+  const { error } = await clienteAdministrador()
+    .from(nombre)
+    .select("*")
+    .limit(0);
+  return !error;
+}

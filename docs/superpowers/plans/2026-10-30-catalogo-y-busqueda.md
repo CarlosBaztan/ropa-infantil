@@ -106,7 +106,7 @@ export interface Pagina {
 export async function buscarCatalogo(supabase, filtros): Promise<Pagina>
 ```
 
-- [ ] **Paso 1: las pruebas, contra la base de pruebas**
+- [x] **Paso 1: las pruebas, contra la base de pruebas**
 
 Siembra media docena de anuncios de una usuaria y comprueba: que filtra
 por varias tallas a la vez; que `tipo: "lote"` deja fuera las prendas
@@ -116,10 +116,10 @@ pero detrás; que la página 7 de un catálogo corto devuelve vacío y
 `hayMas: false`; y que el total cuenta lo que hay, no lo que cabe en la
 página.
 
-- [ ] **Paso 2: ejecutar y ver que falla**
-- [ ] **Paso 3: escribir la consulta**
-- [ ] **Paso 4: ejecutar y ver que pasa**
-- [ ] **Paso 5: commit**
+- [x] **Paso 2: ejecutar y ver que falla**
+- [x] **Paso 3: escribir la consulta**
+- [x] **Paso 4: ejecutar y ver que pasa**
+- [x] **Paso 5: commit**
 
 ---
 
@@ -138,9 +138,9 @@ La rejilla recibe los anuncios ya cargados y, si hay más, un enlace de
 JavaScript: así el botón de atrás sigue funcionando y la página 2 se
 puede compartir.
 
-- [ ] **Paso 1: prueba de la tarjeta con un lote y con una prenda**
-- [ ] **Paso 2: escribirlas y sustituir la copia de la ficha**
-- [ ] **Paso 3: commit**
+- [x] **Paso 1: prueba de la tarjeta con un lote y con una prenda**
+- [x] **Paso 2: escribirlas y sustituir la copia de la ficha**
+- [x] **Paso 3: commit**
 
 ---
 
@@ -153,9 +153,9 @@ de lotes**, que es el argumento del nicho. El armario: lo que esa persona
 tiene en venta y lo que ha vendido, que es la mejor señal de que se puede
 confiar en ella.
 
-- [ ] **Paso 1: prueba de recorrido que publique y lo vea en la portada**
-- [ ] **Paso 2: escribirlas**
-- [ ] **Paso 3: commit**
+- [x] **Paso 1: prueba de recorrido que publique y lo vea en la portada**
+- [x] **Paso 2: escribirlas**
+- [x] **Paso 3: commit**
 
 ---
 
@@ -174,9 +174,9 @@ las pantallas, porque son lógica pura:
   código de talla sigue siendo el rango, el atajo vive solo aquí.
 - Menos de diez anuncios → `robots: noindex`. Diez o más → indexable.
 
-- [ ] **Paso 1: las pruebas de unidad de las direcciones y del umbral**
-- [ ] **Paso 2: escribirlas**
-- [ ] **Paso 3: commit**
+- [x] **Paso 1: las pruebas de unidad de las direcciones y del umbral**
+- [x] **Paso 2: escribirlas**
+- [x] **Paso 3: commit**
 
 ---
 
@@ -191,9 +191,9 @@ El texto se busca en título, marca y descripción. Hay que escaparlo: en
 un `like` de PostgreSQL, `%` y `_` son comodines, y una búsqueda de
 «100% algodón» no puede acabar devolviendo el catálogo entero.
 
-- [ ] **Paso 1: prueba de que el texto con comodines no rompe nada**
-- [ ] **Paso 2: escribirla**
-- [ ] **Paso 3: commit**
+- [x] **Paso 1: prueba de que el texto con comodines no rompe nada**
+- [x] **Paso 2: escribirla**
+- [x] **Paso 3: commit**
 
 ---
 
@@ -209,9 +209,9 @@ La barra de abajo que pide la sección 8, con cuatro destinos en vez de
 cinco —Inicio, Buscar, Publicar, Perfil—: los mensajes son del plan 4 y
 un botón que no lleva a ninguna parte es peor que no tenerlo.
 
-- [ ] **Paso 1: prueba de que el sitemap no ofrece páginas por debajo del umbral**
-- [ ] **Paso 2: escribirlos**
-- [ ] **Paso 3: commit**
+- [x] **Paso 1: prueba de que el sitemap no ofrece páginas por debajo del umbral**
+- [x] **Paso 2: escribirlos**
+- [x] **Paso 3: commit**
 
 ---
 
@@ -222,3 +222,48 @@ que recorrer no sirven de nada: entran al final de este plan o al
 principio del cuarto. La mensajería (plan 4). El perfil del niño y el
 aviso de siguiente talla (tramo B). La siembra asistida y el panel
 (plan 5).
+
+
+---
+
+## Estado al cerrar el plan — 30 de octubre de 2026
+
+Las seis tareas están hechas. 268 pruebas de unidad y de permisos, 25 de
+recorrido completo, todas en verde contra la base de pruebas.
+
+El sitio ya se puede recorrer: portada con atajos por talla, franja de
+lotes y novedades; `/lotes` y `/lotes/talla/x`; `/ropa/talla/x`,
+`/ropa/<categoria>`, `/ropa/<genero>/<talla>` y
+`/ropa/<genero>/<categoria>`; `/marca/x`; `/ropa-segunda-mano/<provincia>`;
+el armario de cada quien con lo suyo y lo vendido; `/buscar` con filtros;
+mapa del sitio con umbral y `robots.txt`.
+
+Lo que apareció por el camino:
+
+- **Next no arranca con dos nombres distintos en el mismo sitio de la
+  ruta.** `/ropa/[categoria]` y `/ropa/[genero]/[algo]` compilaban sin
+  una queja y luego el servidor devolvía 500 en TODAS las páginas del
+  sitio, no solo en esas dos. Se arregló llamando «seccion» al tramo en
+  las dos rutas, y hay una prueba de recorrido que lo caza, porque la
+  compilación no lo ve.
+- **Las páginas públicas no tocan las cookies.** En cuanto una página lee
+  una, Next tiene que calcularla entera en cada visita. Con un cliente
+  sin sesión, la portada se guarda hecha y se rehace cada cinco minutos.
+  Es la diferencia entre responder al instante y pagar servidor por cada
+  visita que llegue de Google.
+- **El mapa del sitio contaba mal el coste.** Preguntar a la base cuántos
+  anuncios hay de cada talla, cada categoría y cada provincia eran más de
+  doscientas consultas. Ahora se traen los anuncios una vez y se cuenta
+  en memoria.
+
+Lo que queda fuera y sigue pendiente:
+
+- **Los favoritos.** Necesitan tabla propia y sesión. Entran al principio
+  del plan 4.
+- **Las fotos no pasan por ningún optimizador.** Se suben ya reducidas a
+  1600 px y en WebP desde el navegador, así que se sirven tal cual. Si
+  algún día el catálogo crece, habrá que mirar si compensa.
+- **La mensajería es el agujero que queda.** Hoy se puede publicar y se
+  puede encontrar, pero no se puede preguntar «¿sigue disponible?». Sin
+  eso no se cierra una sola venta, y vender es el número con el que se
+  decide si el proyecto sigue. Es el plan 4 y es lo siguiente.

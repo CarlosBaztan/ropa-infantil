@@ -43,18 +43,37 @@ más bloquea.
 
 ## Las migraciones que faltan
 
-La base de pruebas va por la 0011 y todas están comprobadas allí. La de
-producción se quedó en la 0007, así que todavía no existen los anuncios y
-publicar en la web desplegada da error. Hay que aplicar, en este orden, en
-el proyecto `ropa-infantil-produccion`:
+### En PRUEBAS: la 0012
+
+La base de pruebas va por la 0011. La **0012**, que crea las
+conversaciones y los mensajes, está escrita y **sin aplicar**: se me cerró
+el navegador antes de poder pegarla. Mientras no esté, sus veinte pruebas
+de permisos **se saltan en silencio** —no fallan, pero tampoco protegen
+nada—. Lo veras en la salida de `npm test` como «20 skipped».
+
+      .\scripts\preparar-sql.ps1 -Solo 0012
+
+      https://supabase.com/dashboard/project/qbdlgxonjamdsagyjjes/sql/new
+
+En cuanto esté, dímelo y compruebo que las veinte pasan. Es la tabla más
+delicada del proyecto: un anuncio mal protegido deja que alguien cambie
+un precio, pero una conversación mal protegida deja que un desconocido
+lea dónde y a qué hora ha quedado una madre con otra.
+
+### En PRODUCCIÓN: de la 0008 en adelante
+
+Allí la base se quedó en la 0007, así que todavía no existen los anuncios
+y publicar en la web desplegada da error. Hay que aplicar, en este orden,
+en el proyecto `ropa-infantil-produccion`:
 
       0008_anuncios.sql
       0009_fotos.sql
       0010_cerrar_los_permisos_de_columna.sql
       0011_todo_el_mundo_tiene_alias.sql
+      0012_conversaciones.sql   (después de probarla en pruebas)
 
-Las cuatro se copian juntas, en orden y en una sola transacción —si algo
-falla no se aplica nada— con:
+Se copian juntas, en orden y en una sola transacción —si algo falla no se
+aplica nada— con:
 
       .\scripts\preparar-sql.ps1 -Desde 0008
 
