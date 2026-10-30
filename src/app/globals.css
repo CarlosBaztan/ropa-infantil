@@ -754,3 +754,38 @@ body {
     display: none;
   }
 }
+
+/*
+ * La hoja de filtros, plegada. El resumen es la zona que se pulsa, asi
+ * que necesita su alto minimo igual que un boton.
+ */
+/*
+ * Se le da forma de pastilla a proposito: con la regla general de zonas
+ * tactiles, un summary ya es inline-flex centrado de 48 px, y sin borde
+ * parecia un titulo centrado en medio del formulario en vez de algo que
+ * se puede pulsar. El triangulo de siempre se esconde y se pone uno que
+ * cambia al abrir.
+ */
+.mas-filtros > summary {
+  width: fit-content;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--c-borde-control);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.mas-filtros > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mas-filtros > summary::after {
+  content: "▾";
+  color: var(--c-ink-muted);
+}
+
+.mas-filtros[open] > summary::after {
+  content: "▴";
+}

@@ -91,6 +91,13 @@ export default async function Buscar({
   const pagina = Math.max(1, Number.parseInt(uno(parametros.pagina) || "1", 10));
 
   const hayFiltros = Object.keys(filtros).length > 0;
+  // Los de la hoja plegada: el texto no cuenta, que está siempre a la
+  // vista. Si alguno viene puesto, la hoja se abre sola, para que nadie
+  // se encuentre resultados filtrados sin saber por qué.
+  const cuantosFiltros = Object.keys(filtros).filter(
+    (clave) => clave !== "texto",
+  ).length;
+  const afinado = cuantosFiltros > 0;
 
   return (
     <PantallaDeCatalogo
@@ -104,6 +111,13 @@ export default async function Buscar({
           : "Elige una talla o escribe qué buscas."
       }
     >
+      {/*
+       * Los filtros van en dos niveles, como pide el diseño: arriba lo
+       * que se usa siempre, y el resto plegado. La primera versión los
+       * puso todos a la vista y las diecinueve casillas de talla se
+       * comían la pantalla entera del móvil: había que pasar por encima
+       * de todas antes de llegar a un solo resultado.
+       */}
       <form method="get" action="/buscar" className="pila filtros">
         <div className="campo">
           <label htmlFor="texto">Qué buscas</label>
@@ -116,90 +130,102 @@ export default async function Buscar({
           />
         </div>
 
-        <fieldset className="campo" style={{ border: "none" }}>
-          <legend>Talla</legend>
-          <p className="ayuda">
-            Puedes marcar varias: un bebé siempre está a caballo entre dos.
-          </p>
-          <div className="casillas-en-linea">
-            {TALLAS.map((talla) => (
-              <label key={talla.codigo} className="casilla-compacta">
-                <input
-                  type="checkbox"
-                  name="talla"
-                  value={talla.codigo}
-                  defaultChecked={varios(parametros.talla).includes(
-                    talla.codigo,
-                  )}
-                />
-                <span>{talla.etiqueta}</span>
-              </label>
-            ))}
+        <details className="mas-filtros" open={afinado}>
+          <summary>
+            Afinar la búsqueda
+            {cuantosFiltros > 0 ? ` (${cuantosFiltros})` : ""}
+          </summary>
+
+          <div className="pila" style={{ marginTop: "var(--sp-4)" }}>
+            <fieldset className="campo" style={{ border: "none" }}>
+              <legend>Talla</legend>
+              <p className="ayuda">
+                Puedes marcar varias: un bebé siempre está a caballo entre
+                dos.
+              </p>
+              <div className="casillas-en-linea">
+                {TALLAS.map((talla) => (
+                  <label key={talla.codigo} className="casilla-compacta">
+                    <input
+                      type="checkbox"
+                      name="talla"
+                      value={talla.codigo}
+                      defaultChecked={varios(parametros.talla).includes(
+                        talla.codigo,
+                      )}
+                    />
+                    <span>{talla.etiqueta}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="campo">
+              <label htmlFor="categoria">Qué es</label>
+              <select
+                id="categoria"
+                name="categoria"
+                defaultValue={uno(parametros.categoria)}
+              >
+                <option value="">Cualquier cosa</option>
+                {CATEGORIAS.map((categoria) => (
+                  <option key={categoria.codigo} value={categoria.codigo}>
+                    {categoria.etiqueta}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="campo">
+              <label htmlFor="tipo">Prenda o lote</label>
+              <select id="tipo" name="tipo" defaultValue={uno(parametros.tipo)}>
+                <option value="">Las dos cosas</option>
+                <option value="lote">Solo lotes</option>
+                <option value="prenda">Solo prendas sueltas</option>
+              </select>
+            </div>
+
+            <div className="campo">
+              <label htmlFor="provincia">Cerca de</label>
+              <select
+                id="provincia"
+                name="provincia"
+                defaultValue={uno(parametros.provincia)}
+              >
+                <option value="">Toda España</option>
+                {PROVINCIAS.map((provincia) => (
+                  <option key={provincia.codigo} value={provincia.codigo}>
+                    {provincia.nombre}
+                  </option>
+                ))}
+              </select>
+              <span className="ayuda">
+                Pone delante lo de esa provincia. No esconde el resto.
+              </span>
+            </div>
+
+            <div className="campo">
+              <label htmlFor="precio">Precio máximo</label>
+              <input
+                id="precio"
+                name="precio"
+                inputMode="decimal"
+                defaultValue={uno(parametros.precio)}
+                placeholder="25"
+              />
+            </div>
           </div>
-        </fieldset>
-
-        <div className="campo">
-          <label htmlFor="categoria">Qué es</label>
-          <select
-            id="categoria"
-            name="categoria"
-            defaultValue={uno(parametros.categoria)}
-          >
-            <option value="">Cualquier cosa</option>
-            {CATEGORIAS.map((categoria) => (
-              <option key={categoria.codigo} value={categoria.codigo}>
-                {categoria.etiqueta}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="campo">
-          <label htmlFor="tipo">Prenda o lote</label>
-          <select id="tipo" name="tipo" defaultValue={uno(parametros.tipo)}>
-            <option value="">Las dos cosas</option>
-            <option value="lote">Solo lotes</option>
-            <option value="prenda">Solo prendas sueltas</option>
-          </select>
-        </div>
-
-        <div className="campo">
-          <label htmlFor="provincia">Cerca de</label>
-          <select
-            id="provincia"
-            name="provincia"
-            defaultValue={uno(parametros.provincia)}
-          >
-            <option value="">Toda España</option>
-            {PROVINCIAS.map((provincia) => (
-              <option key={provincia.codigo} value={provincia.codigo}>
-                {provincia.nombre}
-              </option>
-            ))}
-          </select>
-          <span className="ayuda">
-            Pone delante lo de esa provincia. No esconde el resto.
-          </span>
-        </div>
-
-        <div className="campo">
-          <label htmlFor="precio">Precio máximo</label>
-          <input
-            id="precio"
-            name="precio"
-            inputMode="decimal"
-            defaultValue={uno(parametros.precio)}
-            placeholder="25"
-          />
-        </div>
+        </details>
 
         <div style={{ display: "flex", gap: "var(--sp-3)" }}>
           <button className="boton" type="submit">
             Buscar
           </button>
-          <a className="boton boton-secundario" href="/buscar">
-            Limpiar
-          </a>
+          {hayFiltros && (
+            <a className="boton boton-secundario" href="/buscar">
+              Limpiar
+            </a>
+          )}
         </div>
       </form>
     </PantallaDeCatalogo>
