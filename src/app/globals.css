@@ -612,3 +612,67 @@ label:has(> input[type="radio"]) {
   align-items: center;
   min-height: var(--tap-min);
 }
+
+/* --- El catalogo --- */
+
+/* Las paginas de rejilla necesitan mas ancho que un formulario. */
+.pagina-ancha {
+  max-width: 60rem;
+}
+
+.atajos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.atajo {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--c-borde-control);
+  border-radius: var(--r-full);
+  color: var(--c-ink);
+  text-decoration: none;
+}
+
+.atajo:hover,
+.atajo[aria-current="page"] {
+  background: var(--c-primary-soft);
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+}
+
+.cabecera-de-franja {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+/* Los filtros del buscador */
+
+.filtros {
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+}
+
+.casillas-en-linea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+/* Las casillas de talla son muchas: en una columna no caben en pantalla,
+ * pero cada una mantiene su alto minimo para poder pulsarla. */
+.casilla-compacta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tap-min);
+}

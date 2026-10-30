@@ -1,5 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+
+/**
+ * Cliente sin sesión, para las páginas públicas del catálogo.
+ *
+ * No toca las cookies, y esa es toda la gracia: en cuanto una página lee
+ * una cookie, Next tiene que calcularla entera en cada visita. Las
+ * páginas de catálogo son las que van a recibir el tráfico de Google y
+ * enseñan lo mismo a todo el mundo, así que pueden guardarse hechas y
+ * rehacerse cada pocos minutos. Es la diferencia entre una web que
+ * responde al instante y una factura de servidor.
+ */
+export function clientePublico() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+}
 
 /**
  * Cliente para el servidor. Lee la sesión de las cookies de la petición.
