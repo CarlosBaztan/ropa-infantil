@@ -96,7 +96,7 @@ test.describe("publicar un lote", () => {
     await page
       .getByLabel("Hasta la talla (opcional)")
       .selectOption({ label: "9-12 meses" });
-    await page.getByLabel("Qué es").selectOption({ label: "Bodies" });
+    await page.getByLabel("Qué prenda es").selectOption({ label: "Bodies" });
     await page.getByRole("button", { name: "Continuar" }).click();
 
     // 3. Precio y entrega
@@ -170,7 +170,7 @@ test.describe("publicar un lote", () => {
     await continuar.click();
 
     await page.getByLabel("Talla").selectOption({ label: "3-6 meses" });
-    await page.getByLabel("Qué es").selectOption({ label: "Pijamas" });
+    await page.getByLabel("Qué prenda es").selectOption({ label: "Pijamas" });
     await page.getByRole("button", { name: "Continuar" }).click();
 
     await page.getByLabel("Precio").fill("9,50");

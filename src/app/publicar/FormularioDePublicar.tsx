@@ -411,7 +411,11 @@ export function FormularioDePublicar(props: Props) {
 
           <Selector
             id="categoria"
-            etiqueta="Qué es"
+            /* No «Qué es»: asi se llamaba, y el paso entero se titula ya
+               «Qué es». Dos cosas con el mismo nombre en la misma
+               pantalla, una de ellas un desplegable, es justo lo que hace
+               dudar y abandonar a mitad. */
+            etiqueta="Qué prenda es"
             opciones={props.categorias}
             valor={categoria}
             alCambiar={setCategoria}
