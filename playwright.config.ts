@@ -30,10 +30,20 @@ export default defineConfig({
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
   ],
 
+  /*
+   * Siempre compila de cero, aunque haya un servidor levantado.
+   *
+   * Antes reutilizaba el que hubiera, que es lo que trae la plantilla, y
+   * eso ha costado ya dos ratos largos: un servidor con la compilacion
+   * de hace media hora hace que las pruebas fallen por codigo que ya no
+   * existe, o peor, que pasen por codigo que ya no es el que hay. Media
+   * hora buscando un fallo que no estaba vale mas que el minuto que
+   * tarda en compilar.
+   */
   webServer: {
     command: "npm run build && npm start",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 240_000,
   },
 });

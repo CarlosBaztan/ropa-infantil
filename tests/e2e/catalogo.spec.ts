@@ -93,7 +93,11 @@ test.describe("el catálogo", () => {
       page.getByRole("heading", { name: "Ropa de la talla 3-6 meses" }),
     ).toBeVisible();
 
-    const tarjeta = page.getByRole("link", { name: new RegExp(palabra) });
+    // Se busca la tarjeta entera, no el enlace: el enlace es solo el
+    // titulo, para que su nombre accesible no sea el parrafo completo.
+    const tarjeta = page
+      .getByRole("article")
+      .filter({ hasText: new RegExp(palabra) });
     await expect(tarjeta).toBeVisible();
     // 25,00 € entre 10 piezas: la cuenta que nadie hace de cabeza.
     await expect(tarjeta).toContainText("2,50 € la pieza");

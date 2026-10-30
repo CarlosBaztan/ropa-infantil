@@ -15,6 +15,16 @@ import { tallaPorCodigo } from "@/lib/tallas";
  *
  * No lleva el nombre de quien vende. Es ruido: quien compra mira la
  * foto, el precio, la talla y dónde está.
+ *
+ * EL ENLACE ES SOLO EL TÍTULO, y se estira por encima de toda la tarjeta
+ * con un pseudoelemento. Antes el enlace lo envolvía todo, y eso tenía
+ * dos consecuencias que no se ven mirando la pantalla: su nombre salía
+ * de pegar todo el texto de dentro —«Vendido Lote · 8 piezas Lote de
+ * bodies 24,00 € 3,00 € la pieza 3-6 meses · Como nuevo · Madrid»—, con
+ * el título en tercer lugar; y la rejilla no tenía ni un encabezado, así
+ * que no se podía recorrer saltando de título en título, que es como se
+ * ojea un catálogo cuando no se ve. Con el enlace en el título, el
+ * pulgar sigue pudiendo pulsar en cualquier parte de la tarjeta.
  */
 
 function tallaEnPalabras(anuncio: ResumenDeAnuncio): string {
@@ -41,10 +51,7 @@ export function TarjetaDeAnuncio({ anuncio }: { anuncio: ResumenDeAnuncio }) {
   const provincia = provinciaPorCodigo(anuncio.provincia ?? "")?.nombre;
 
   return (
-    <Link
-      className="tarjeta-anuncio"
-      href={direccionDeAnuncio(anuncio.slug, anuncio.id_publico)}
-    >
+    <article className="tarjeta-anuncio">
       <div className="foto-de-tarjeta">
         {portada ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -70,7 +77,14 @@ export function TarjetaDeAnuncio({ anuncio }: { anuncio: ResumenDeAnuncio }) {
         </p>
       )}
 
-      <p className="titulo-tarjeta">{anuncio.titulo}</p>
+      <h3 className="titulo-tarjeta">
+        <Link
+          className="enlace-estirado"
+          href={direccionDeAnuncio(anuncio.slug, anuncio.id_publico)}
+        >
+          {anuncio.titulo}
+        </Link>
+      </h3>
 
       <p className="precio" style={{ fontWeight: 700 }}>
         {formatearPrecio(anuncio.precio_centimos)}
@@ -86,6 +100,6 @@ export function TarjetaDeAnuncio({ anuncio }: { anuncio: ResumenDeAnuncio }) {
           .filter(Boolean)
           .join(" · ")}
       </p>
-    </Link>
+    </article>
   );
 }

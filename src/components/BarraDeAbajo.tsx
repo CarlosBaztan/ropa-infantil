@@ -80,7 +80,7 @@ export function BarraDeAbajo() {
   const ruta = usePathname();
 
   return (
-    <nav className="barra-abajo" aria-label="Principal">
+    <nav className="barra-abajo" aria-label="Secciones">
       {DESTINOS.map((destino) => {
         const aqui =
           destino.href === "/" ? ruta === "/" : ruta.startsWith(destino.href);

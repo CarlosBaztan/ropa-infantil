@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { PantallaDeCatalogo } from "@/components/PantallaDeCatalogo";
 import type { Filtros } from "@/lib/anuncios/catalogo";
-import { CATEGORIAS } from "@/lib/anuncios/modelo";
+import { CATEGORIAS, esCategoria, etiquetaDe } from "@/lib/anuncios/modelo";
 import { aCentimos } from "@/lib/anuncios/precio";
-import { esCategoria } from "@/lib/anuncios/modelo";
-import { PROVINCIAS, esCodigoDeProvincia } from "@/lib/provincias";
+import {
+  PROVINCIAS,
+  esCodigoDeProvincia,
+  provinciaPorCodigo,
+} from "@/lib/provincias";
 import { TALLAS, tallaPorCodigo } from "@/lib/tallas";
 
 /*
@@ -22,10 +25,39 @@ import { TALLAS, tallaPorCodigo } from "@/lib/tallas";
  * se puede compartir pegando la dirección.
  */
 
-export const metadata: Metadata = {
-  title: "Buscar ropa infantil de segunda mano",
-  robots: { index: false, follow: true },
-};
+/*
+ * El titulo dice QUE se ha buscado. Con el titulo fijo, cinco busquedas
+ * abiertas en cinco pestanas son cinco pestanas identicas, y al volver
+ * con el boton de atras no hay forma de saber en cual estas sin leer los
+ * filtros uno a uno.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Busqueda;
+}): Promise<Metadata> {
+  const parametros = await searchParams;
+  const filtros = filtrosDeLaDireccion(parametros);
+
+  const trozos = [
+    filtros.texto,
+    filtros.tipo === "lote" ? "lotes" : null,
+    filtros.tallas?.length
+      ? `talla ${filtros.tallas
+          .map((t) => tallaPorCodigo(t)?.etiqueta ?? t)
+          .join(" o ")}`
+      : null,
+    filtros.categoria ? etiquetaDe(CATEGORIAS, filtros.categoria) : null,
+    filtros.provincia ? provinciaPorCodigo(filtros.provincia)?.nombre : null,
+  ].filter(Boolean);
+
+  return {
+    title: trozos.length
+      ? `Buscar: ${trozos.join(", ")}`
+      : "Buscar ropa infantil de segunda mano",
+    robots: { index: false, follow: true },
+  };
+}
 
 type Busqueda = Promise<Record<string, string | string[] | undefined>>;
 
@@ -118,7 +150,12 @@ export default async function Buscar({
        * comían la pantalla entera del móvil: había que pasar por encima
        * de todas antes de llegar a un solo resultado.
        */}
-      <form method="get" action="/buscar" className="pila filtros">
+      <form
+        method="get"
+        action="/buscar"
+        role="search"
+        className="pila filtros"
+      >
         <div className="campo">
           <label htmlFor="texto">Qué buscas</label>
           <input
@@ -137,9 +174,16 @@ export default async function Buscar({
           </summary>
 
           <div className="pila" style={{ marginTop: "var(--sp-4)" }}>
-            <fieldset className="campo" style={{ border: "none" }}>
+            {/* La ayuda va atada al grupo con aria-describedby: en modo
+              * formulario, un lector lee la etiqueta y la descripcion del
+              * control, no el texto suelto que haya alrededor. */}
+            <fieldset
+              className="campo"
+              style={{ border: "none" }}
+              aria-describedby="ayuda-tallas"
+            >
               <legend>Talla</legend>
-              <p className="ayuda">
+              <p className="ayuda" id="ayuda-tallas">
                 Puedes marcar varias: un bebé siempre está a caballo entre
                 dos.
               </p>
@@ -187,9 +231,14 @@ export default async function Buscar({
 
             <div className="campo">
               <label htmlFor="provincia">Cerca de</label>
+              {/* Esta ayuda es la que mas falta hace de todas: explica
+                * que el filtro ORDENA y no filtra. Quien no la oiga elige
+                * Madrid, ve resultados de Sevilla y concluye que el
+                * buscador esta roto. */}
               <select
                 id="provincia"
                 name="provincia"
+                aria-describedby="ayuda-provincia"
                 defaultValue={uno(parametros.provincia)}
               >
                 <option value="">Toda España</option>
@@ -199,7 +248,7 @@ export default async function Buscar({
                   </option>
                 ))}
               </select>
-              <span className="ayuda">
+              <span className="ayuda" id="ayuda-provincia">
                 Pone delante lo de esa provincia. No esconde el resto.
               </span>
             </div>
@@ -209,6 +258,13 @@ export default async function Buscar({
               <input
                 id="precio"
                 name="precio"
+                /* El type va escrito a proposito. Sin el, el campo se
+                 * comporta como texto pero el selector input[type="text"]
+                 * no lo encuentra, y se queda sin alto tactil, sin borde y
+                 * sin colores: 21 pixeles de alto en medio de controles de
+                 * 48. Y no es type="number" porque ahi el navegador
+                 * rechaza la coma, y aqui se escribe «12,50». */
+                type="text"
                 inputMode="decimal"
                 defaultValue={uno(parametros.precio)}
                 placeholder="25"

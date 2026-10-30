@@ -32,11 +32,23 @@ export function RejillaDeAnuncios({
 
   return (
     <>
-      <div className="rejilla-anuncios" style={{ marginTop: "var(--sp-4)" }}>
+      {/*
+        * Una lista de verdad, y con role="list" escrito aunque sea un
+        * <ul>: Safari le quita la semantica de lista a una lista sin
+        * bolitas, y la mitad de este publico va en iPhone. Sin esto se
+        * oyen doce enlaces sueltos y no se sabe cuantos quedan.
+        */}
+      <ul
+        className="rejilla-anuncios"
+        role="list"
+        style={{ marginTop: "var(--sp-4)", listStyle: "none" }}
+      >
         {anuncios.map((anuncio) => (
-          <TarjetaDeAnuncio key={anuncio.id_publico} anuncio={anuncio} />
+          <li key={anuncio.id_publico}>
+            <TarjetaDeAnuncio anuncio={anuncio} />
+          </li>
         ))}
-      </div>
+      </ul>
 
       {hayMas && direccionDeLaSiguiente && (
         <p style={{ marginTop: "var(--sp-6)", textAlign: "center" }}>

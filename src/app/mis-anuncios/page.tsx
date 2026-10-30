@@ -10,6 +10,7 @@ import { direccionDeAnuncio } from "@/lib/anuncios/direccion";
 import { formatearPrecio, precioPorPieza } from "@/lib/anuncios/precio";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { tallaPorCodigo } from "@/lib/tallas";
+import { AvisoConFoco } from "@/components/AvisoConFoco";
 import { borrarAnuncio, cambiarSituacion } from "./acciones";
 
 export const metadata: Metadata = {
@@ -62,20 +63,19 @@ export default async function MisAnuncios({
         Tus anuncios
       </h1>
 
+      {/* La clave hace que el aviso se monte de nuevo —y por tanto
+        * recoja el foco otra vez— en cada accion, aunque el texto sea el
+        * mismo que la vez anterior. */}
       {error && (
-        <p role="alert" className="aviso-error" style={{ marginTop: "var(--sp-5)" }}>
+        <AvisoConFoco key={`error-${error}`} className="aviso-error">
           <span>{error}</span>
-        </p>
+        </AvisoConFoco>
       )}
 
       {hecho && MENSAJES[hecho] && (
-        <p
-          role="status"
-          className="tarjeta"
-          style={{ marginTop: "var(--sp-5)" }}
-        >
+        <AvisoConFoco key={`hecho-${hecho}`} className="tarjeta">
           {MENSAJES[hecho]}
-        </p>
+        </AvisoConFoco>
       )}
 
       {anuncios.length === 0 ? (
@@ -136,8 +136,11 @@ function Grupo({
           {vacio}
         </p>
       ) : (
+        /* role="list" escrito aunque sea un <ul>: Safari le quita la
+           semantica de lista a una lista sin bolitas. */
         <ul
           className="pila"
+          role="list"
           style={{ marginTop: "var(--sp-4)", listStyle: "none" }}
         >
           {anuncios.map((anuncio) => (
@@ -214,8 +217,13 @@ function FilaDeAnuncio({
         </div>
       </Link>
 
+      {/* Sin role="alert": no es algo que acabe de pasar, es como está ese
+        * anuncio siempre, y puede haber tres o cuatro a la vez. Una alerta
+        * interrumpe lo que se esté leyendo, y tres alertas seguidas son
+        * tres interrupciones. Se entiende igual sin el rol: el aviso lleva
+        * borde, icono y texto, no solo color. */}
       {sinFotos && (
-        <p role="alert" className="aviso-error" style={{ marginTop: "var(--sp-3)" }}>
+        <p className="aviso-error" style={{ marginTop: "var(--sp-3)" }}>
           <span>
             Este anuncio se quedó sin fotos: la subida falló a mitad. Bórralo
             y vuelve a publicarlo; es más rápido que arreglarlo.
@@ -225,11 +233,17 @@ function FilaDeAnuncio({
 
       <div className="acciones-anuncio">
         {anuncio.situacion === "activa" && (
-          <Boton anuncio={anuncio.id} situacion="reservada" texto="Reservar" />
+          <Boton
+            anuncio={anuncio.id}
+            titulo={anuncio.titulo}
+            situacion="reservada"
+            texto="Reservar"
+          />
         )}
         {anuncio.situacion === "reservada" && (
           <Boton
             anuncio={anuncio.id}
+            titulo={anuncio.titulo}
             situacion="activa"
             texto="Quitar la reserva"
           />
@@ -246,6 +260,7 @@ function FilaDeAnuncio({
             </p>
             <Boton
               anuncio={anuncio.id}
+              titulo={anuncio.titulo}
               situacion="vendida"
               texto="Sí, lo he vendido"
               principal
@@ -256,6 +271,7 @@ function FilaDeAnuncio({
         {anuncio.situacion === "vendida" && (
           <Boton
             anuncio={anuncio.id}
+            titulo={anuncio.titulo}
             situacion="activa"
             texto="No estaba vendido"
           />
@@ -265,6 +281,7 @@ function FilaDeAnuncio({
           <>
             <Boton
               anuncio={anuncio.id}
+              titulo={anuncio.titulo}
               situacion="activa"
               texto="Volver a publicar"
               principal
@@ -276,14 +293,23 @@ function FilaDeAnuncio({
               </p>
               <form action={borrarAnuncio}>
                 <input type="hidden" name="anuncio" value={anuncio.id} />
-                <button className="boton" type="submit">
+                <button
+                  className="boton"
+                  type="submit"
+                  aria-label={`Borrar para siempre «${anuncio.titulo}»`}
+                >
                   Borrarlo para siempre
                 </button>
               </form>
             </details>
           </>
         ) : (
-          <Boton anuncio={anuncio.id} situacion="retirada" texto="Retirar" />
+          <Boton
+            anuncio={anuncio.id}
+            titulo={anuncio.titulo}
+            situacion="retirada"
+            texto="Retirar"
+          />
         )}
       </div>
     </div>
@@ -292,11 +318,13 @@ function FilaDeAnuncio({
 
 function Boton({
   anuncio,
+  titulo,
   situacion,
   texto,
   principal = false,
 }: {
   anuncio: string;
+  titulo: string;
   situacion: string;
   texto: string;
   principal?: boolean;
@@ -308,6 +336,14 @@ function Boton({
       <button
         className={principal ? "boton" : "boton boton-secundario"}
         type="submit"
+        /*
+         * Con ocho anuncios hay ocho botones «Retirar» y ocho «Vender».
+         * Quien los recorre con un lector oye ocho veces lo mismo sin
+         * nada que los distinga. El texto visible va delante y tal cual,
+         * porque quien maneja el movil por voz dice «pulsa Retirar» y
+         * esa palabra tiene que seguir estando en el nombre.
+         */
+        aria-label={`${texto} «${titulo}»`}
       >
         {texto}
       </button>
